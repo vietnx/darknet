@@ -120,7 +120,9 @@ matrix load_image_augment_paths(char **paths, int n, int min, int max, int size,
         }
         int flip = rand()%2;
         if (flip) flip_image(crop);
-        random_distort_image(crop, hue, saturation, exposure);
+        if(crop.c == 3){
+            random_distort_image(crop, hue, saturation, exposure);
+        }
 
         /*
         show_image(im, "orig");
@@ -722,7 +724,9 @@ data load_data_seg(int n, char **paths, int m, int w, int h, int classes, int mi
 
         int flip = rand()%2;
         if(flip) flip_image(sized);
-        random_distort_image(sized, hue, saturation, exposure);
+        if(sized.c == 3){
+            random_distort_image(sized, hue, saturation, exposure);
+        }
         d.X.vals[i] = sized.data;
 
         image mask = get_segmentation_image(random_paths[i], orig.w, orig.h, classes);
@@ -767,7 +771,9 @@ data load_data_iseg(int n, char **paths, int m, int w, int h, int classes, int b
 
         int flip = rand()%2;
         if(flip) flip_image(sized);
-        random_distort_image(sized, hue, saturation, exposure);
+        if(sized.c == 3){
+            random_distort_image(sized, hue, saturation, exposure);
+        }
         d.X.vals[i] = sized.data;
         //show_image(sized, "image");
 
@@ -829,7 +835,9 @@ data load_data_region(int n, char **paths, int m, int w, int h, int size, int cl
 
         image sized = resize_image(cropped, w, h);
         if(flip) flip_image(sized);
-        random_distort_image(sized, hue, saturation, exposure);
+        if(sized.c == 3){
+            random_distort_image(sized, hue, saturation, exposure);
+        }
         d.X.vals[i] = sized.data;
 
         fill_truth_region(random_paths[i], d.y.vals[i], classes, size, flip, dx, dy, 1./sx, 1./sy);
@@ -996,7 +1004,9 @@ data load_data_detection(int n, char **paths, int m, int w, int h, int boxes, in
 
         place_image(orig, nw, nh, dx, dy, sized);
 
-        random_distort_image(sized, hue, saturation, exposure);
+        if(sized.c == 3){
+            random_distort_image(sized, hue, saturation, exposure);
+        }
 
         int flip = rand()%2;
         if(flip) flip_image(sized);

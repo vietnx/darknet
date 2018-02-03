@@ -608,7 +608,9 @@ image load_image_cv(char *filename, int channels)
     }
     image out = ipl_to_image(src);
     cvReleaseImage(&src);
-    rgbgr_image(out);
+    if(out.c == 3){
+        rgbgr_image(out);
+    }
     return out;
 }
 
@@ -625,7 +627,9 @@ image get_image_from_stream(CvCapture *cap)
     IplImage* src = cvQueryFrame(cap);
     if (!src) return make_empty_image(0,0,0);
     image im = ipl_to_image(src);
-    rgbgr_image(im);
+    if(im.c == 3){
+        rgbgr_image(im);
+    }
     return im;
 }
 
@@ -634,7 +638,9 @@ int fill_image_from_stream(CvCapture *cap, image im)
     IplImage* src = cvQueryFrame(cap);
     if (!src) return 0;
     ipl_into_image(src, im);
-    rgbgr_image(im);
+    if(im.c == 3){
+        rgbgr_image(im);
+    }
     return 1;
 }
 

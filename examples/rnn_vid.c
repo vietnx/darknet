@@ -40,7 +40,9 @@ float_pair get_rnn_vid_data(network net, char **files, int n, int batch, int ste
         for(i = 0; i < net.batch; ++i){
             IplImage* src = cvQueryFrame(cap);
             image im = ipl_to_image(src);
-            rgbgr_image(im);
+            if(im.c == 3){
+                rgbgr_image(im);
+            }
             image re = resize_image(im, net.w, net.h);
             //show_image(re, "loaded");
             //cvWaitKey(10);

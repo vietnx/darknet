@@ -360,7 +360,9 @@ void mkimg(char *cfgfile, char *weightfile, int h, int w, int num, char *prefix)
         for(i = 0; i < 100; ++i){
             image r = copy_image(ims[rand()%n]);
             rotate_image_cw(r, rand()%4);
-            random_distort_image(r, 1, 1.5, 1.5);
+            if(r.c == 3){
+                random_distort_image(r, 1, 1.5, 1.5);
+            }
             int dx = rand()%(w-r.w);
             int dy = rand()%(h-r.h);
             ghost_image(r, im, dx, dy);
