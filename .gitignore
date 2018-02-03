@@ -17,6 +17,9 @@ decaf/
 submission/
 cfg/
 darknet
+libdarknet.a
+libdarknet.so
+darknet19_448.conv.23
 .fuse*
 
 # OS Generated #
@@ -25,3 +28,5 @@ ehthumbs.db
 Icon?
 Thumbs.db
 *.swp
+
+*.user*
