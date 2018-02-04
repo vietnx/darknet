@@ -589,12 +589,20 @@ image ipl_to_image(IplImage* src)
 image load_image_cv(char *filename, int channels)
 {
     IplImage* src = 0;
-    int flag = -1;
-    if (channels == 0) flag = -1;
-    else if (channels == 1) flag = 0;
-    else if (channels == 3) flag = 1;
-    else {
+    int flag = CV_LOAD_IMAGE_UNCHANGED;
+    switch (channels) {
+    case 0:
+        flag = CV_LOAD_IMAGE_UNCHANGED;
+        break;
+    case 1:
+        flag = CV_LOAD_IMAGE_GRAYSCALE;
+        break;
+    case 3:
+        flag = CV_LOAD_IMAGE_COLOR;
+        break;
+    default:
         fprintf(stderr, "OpenCV can't force load with %d channels\n", channels);
+        break;
     }
 
     if( (src = cvLoadImage(filename, flag)) == 0 )
