@@ -529,6 +529,7 @@ typedef struct load_args{
     char **labels;
     int h;
     int w;
+    int c;
     int out_w;
     int out_h;
     int nh;
@@ -581,8 +582,8 @@ pthread_t load_data(load_args args);
 list *read_data_cfg(char *filename);
 list *read_cfg(char *filename);
 unsigned char *read_file(char *filename);
-data resize_data(data orig, int w, int h);
-data *tile_data(data orig, int divs, int size);
+data resize_data(data orig, int w, int h, int c);
+data *tile_data(data orig, int divs, int size, int c);
 data select_data(data *orig, int *inds);
 
 void forward_network(network *net);
@@ -679,7 +680,7 @@ image copy_image(image p);
 void draw_box_width(image a, int x1, int y1, int x2, int y2, int w, float r, float g, float b);
 float get_current_rate(network *net);
 void composite_3d(char *f1, char *f2, char *out, int delta);
-data load_data_old(char **paths, int n, int m, char **labels, int k, int w, int h);
+data load_data_old(char **paths, int n, int m, char **labels, int k, int w, int h, int c);
 size_t get_current_batch(network *net);
 void constrain_image(image im);
 image get_network_image_layer(network *net, int i);

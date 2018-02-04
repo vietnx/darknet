@@ -22,6 +22,7 @@ void train_tag(char *cfgfile, char *weightfile, int clear)
     load_args args = {0};
     args.w = net->w;
     args.h = net->h;
+    args.c = net->c;
 
     args.min = net->w;
     args.max = net->max_crop;
@@ -102,7 +103,7 @@ void test_tag(char *cfgfile, char *weightfile, char *filename)
             if(!input) return;
             strtok(input, "\n");
         }
-        image im = load_image_color(input, 0, 0);
+        image im = load_image(input, 0, 0, net->c);
         image r = resize_min(im, size);
         resize_network(net, r.w, r.h);
         printf("%d %d\n", r.w, r.h);

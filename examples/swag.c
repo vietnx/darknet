@@ -31,6 +31,7 @@ void train_swag(char *cfgfile, char *weightfile)
     load_args args = {0};
     args.w = net.w;
     args.h = net.h;
+    args.c = net.c;
     args.paths = paths;
     args.n = imgs;
     args.m = plist->size;

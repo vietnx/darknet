@@ -98,6 +98,7 @@ void train_attention(char *datacfg, char *cfgfile, char *weightfile, int *gpus, 
     load_args args = {0};
     args.w = divs*net->w/size;
     args.h = divs*net->h/size;
+    args.c = net->c;
     args.size = divs*net->w/size;
     args.threads = 32;
     args.hierarchy = net->hierarchy;
@@ -130,9 +131,9 @@ void train_attention(char *datacfg, char *cfgfile, char *weightfile, int *gpus, 
         pthread_join(load_thread, 0);
         train = buffer;
         load_thread = load_data(args);
-        data resized = resize_data(train, net->w, net->h);
+        data resized = resize_data(train, net->w, net->h, net->c);
         extend_data_truth(&resized, divs*divs, 0);
-        data *tiles = tile_data(train, divs, size);
+        data *tiles = tile_data(train, divs, size, net->c);
 
         printf("Loaded: %lf seconds\n", what_time_is_it_now()-time);
         time = what_time_is_it_now();
@@ -271,7 +272,7 @@ void validate_attention_single(char *datacfg, char *filename, char *weightfile)
                 break;
             }
         }
-        image im = load_image_color(paths[i], 0, 0);
+        image im = load_image(paths[i], 0, 0, net->c);
         image resized = resize_min(im, net->w*divs/size);
         image crop = crop_image(resized, (resized.w - net->w*divs/size)/2, (resized.h - net->h*divs/size)/2, net->w*divs/size, net->h*divs/size);
         image rcrop = resize_image(crop, net->w, net->h);
@@ -355,7 +356,7 @@ void validate_attention_multi(char *datacfg, char *filename, char *weightfile)
             }
         }
         float *pred = calloc(classes, sizeof(float));
-        image im = load_image_color(paths[i], 0, 0);
+        image im = load_image(paths[i], 0, 0, net->c);
         for(j = 0; j < nscales; ++j){
             image r = resize_min(im, scales[j]);
             resize_network(net, r.w, r.h);
@@ -407,7 +408,7 @@ void predict_attention(char *datacfg, char *cfgfile, char *weightfile, char *fil
             if(!input) return;
             strtok(input, "\n");
         }
-        image im = load_image_color(input, 0, 0);
+        image im = load_image(input, 0, 0, net->c);
         image r = letterbox_image(im, net->w, net->h);
         //resize_network(&net, r.w, r.h);
         //printf("%d %d\n", r.w, r.h);

@@ -1071,7 +1071,7 @@ void test_lsd(char *cfg, char *weights, char *filename, int gray)
             if(!input) return;
             strtok(input, "\n");
         }
-        image im = load_image_color(input, 0, 0);
+        image im = load_image(input, 0, 0, net->c);
         image resized = resize_min(im, net->w);
         image crop = crop_image(resized, (resized.w - net->w)/2, (resized.h - net->h)/2, net->w, net->h);
         if(gray) grayscale_image_3c(crop);

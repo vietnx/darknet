@@ -86,7 +86,7 @@ void test_dice(char *cfgfile, char *weightfile, char *filename)
             if(!input) return;
             strtok(input, "\n");
         }
-        image im = load_image_color(input, net.w, net.h);
+        image im = load_image(input, net.w, net.h, net.c);
         float *X = im.data;
         float *predictions = network_predict(net, X);
         top_predictions(net, 6, indexes);

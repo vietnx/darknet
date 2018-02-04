@@ -58,6 +58,7 @@ void train_classifier(char *datacfg, char *cfgfile, char *weightfile, int *gpus,
     load_args args = {0};
     args.w = net->w;
     args.h = net->h;
+    args.c = net->c;
     args.threads = 32;
     args.hierarchy = net->hierarchy;
 
@@ -188,6 +189,7 @@ void validate_classifier_crop(char *datacfg, char *filename, char *weightfile)
     load_args args = {0};
     args.w = net->w;
     args.h = net->h;
+    args.c = net->c;
 
     args.paths = paths;
     args.classes = classes;
@@ -258,7 +260,7 @@ void validate_classifier_10(char *datacfg, char *filename, char *weightfile)
         int w = net->w;
         int h = net->h;
         int shift = 32;
-        image im = load_image_color(paths[i], w+shift, h+shift);
+        image im = load_image(paths[i], w+shift, h+shift, net->c);
         image images[10];
         images[0] = crop_image(im, -shift, -shift, w, h);
         images[1] = crop_image(im, shift, -shift, w, h);
@@ -325,7 +327,7 @@ void validate_classifier_full(char *datacfg, char *filename, char *weightfile)
                 break;
             }
         }
-        image im = load_image_color(paths[i], 0, 0);
+        image im = load_image(paths[i], 0, 0, net->c);
         image resized = resize_min(im, size);
         resize_network(net, resized.w, resized.h);
         //show_image(im, "orig");
@@ -384,7 +386,7 @@ void validate_classifier_single(char *datacfg, char *filename, char *weightfile)
                 break;
             }
         }
-        image im = load_image_color(paths[i], 0, 0);
+        image im = load_image(paths[i], 0, 0, net->c);
         image resized = resize_min(im, net->w);
         image crop = crop_image(resized, (resized.w - net->w)/2, (resized.h - net->h)/2, net->w, net->h);
         //show_image(im, "orig");
@@ -445,7 +447,7 @@ void validate_classifier_multi(char *datacfg, char *cfg, char *weights)
             }
         }
         float *pred = calloc(classes, sizeof(float));
-        image im = load_image_color(paths[i], 0, 0);
+        image im = load_image(paths[i], 0, 0, net->c);
         for(j = 0; j < nscales; ++j){
             image r = resize_max(im, scales[j]);
             resize_network(net, r.w, r.h);
@@ -497,7 +499,7 @@ void try_classifier(char *datacfg, char *cfgfile, char *weightfile, char *filena
             if(!input) return;
             strtok(input, "\n");
         }
-        image orig = load_image_color(input, 0, 0);
+        image orig = load_image(input, 0, 0, net->c);
         image r = resize_min(orig, 256);
         image im = crop_image(r, (r.w - 224 - 1)/2 + 1, (r.h - 224 - 1)/2 + 1, 224, 224);
         float mean[] = {0.48263312050943, 0.45230225481413, 0.40099074308742};
@@ -575,7 +577,7 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
             if(!input) return;
             strtok(input, "\n");
         }
-        image im = load_image_color(input, 0, 0);
+        image im = load_image(input, 0, 0, net->c);
         image r = letterbox_image(im, net->w, net->h);
         //resize_network(net, r.w, r.h);
         //printf("%d %d\n", r.w, r.h);
@@ -620,7 +622,7 @@ void label_classifier(char *datacfg, char *filename, char *weightfile)
     free_list(plist);
 
     for(i = 0; i < m; ++i){
-        image im = load_image_color(paths[i], 0, 0);
+        image im = load_image(paths[i], 0, 0, net->c);
         image resized = resize_min(im, net->w);
         image crop = crop_image(resized, (resized.w - net->w)/2, (resized.h - net->h)/2, net->w, net->h);
         float *pred = network_predict(net, crop.data);
@@ -659,6 +661,7 @@ void test_classifier(char *datacfg, char *cfgfile, char *weightfile, int target_
     load_args args = {0};
     args.w = net->w;
     args.h = net->h;
+    args.c = net->c;
     args.paths = paths;
     args.classes = classes;
     args.n = net->batch;

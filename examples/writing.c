@@ -25,6 +25,7 @@ void train_writing(char *cfgfile, char *weightfile)
     load_args args = {0};
     args.w = net.w;
     args.h = net.h;
+    args.c = net.c;
     args.out_w = out.w;
     args.out_h = out.h;
     args.paths = paths;
@@ -101,7 +102,7 @@ void test_writing(char *cfgfile, char *weightfile, char *filename)
             strtok(input, "\n");
         }
 
-        image im = load_image_color(input, 0, 0);
+        image im = load_image(input, 0, 0, net.c);
         resize_network(&net, im.w, im.h);
         printf("%d %d %d\n", im.h, im.w, im.c);
         float *X = im.data;

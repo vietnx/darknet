@@ -42,6 +42,7 @@ void train_regressor(char *datacfg, char *cfgfile, char *weightfile, int *gpus, 
     load_args args = {0};
     args.w = net->w;
     args.h = net->h;
+    args.c = net->c;
     args.threads = 32;
 
     args.min = net->min_crop;
@@ -130,7 +131,7 @@ void predict_regressor(char *cfgfile, char *weightfile, char *filename)
             if(!input) return;
             strtok(input, "\n");
         }
-        image im = load_image_color(input, 0, 0);
+        image im = load_image(input, 0, 0, net->c);
         image sized = letterbox_image(im, net->w, net->h);
 
         float *X = sized.data;

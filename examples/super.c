@@ -22,6 +22,7 @@ void train_super(char *cfgfile, char *weightfile, int clear)
     load_args args = {0};
     args.w = net->w;
     args.h = net->h;
+    args.c = net->c;
     args.scale = 4;
     args.paths = paths;
     args.n = imgs;
@@ -83,7 +84,7 @@ void test_super(char *cfgfile, char *weightfile, char *filename)
             if(!input) return;
             strtok(input, "\n");
         }
-        image im = load_image_color(input, 0, 0);
+        image im = load_image(input, 0, 0, net->c);
         resize_network(net, im.w, im.h);
         printf("%d %d\n", im.w, im.h);
 

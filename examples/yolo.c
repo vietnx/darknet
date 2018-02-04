@@ -30,6 +30,7 @@ void train_yolo(char *cfgfile, char *weightfile)
     load_args args = {0};
     args.w = net->w;
     args.h = net->h;
+    args.c = net->c;
     args.paths = paths;
     args.n = imgs;
     args.m = plist->size;
@@ -140,6 +141,7 @@ void validate_yolo(char *cfg, char *weights)
     load_args args = {0};
     args.w = net->w;
     args.h = net->h;
+    args.c = net->c;
     args.type = IMAGE_DATA;
 
     for(t = 0; t < nthreads; ++t){
@@ -220,7 +222,7 @@ void validate_yolo_recall(char *cfg, char *weights)
 
     for(i = 0; i < m; ++i){
         char *path = paths[i];
-        image orig = load_image_color(path, 0, 0);
+        image orig = load_image(path, 0, 0, net->c);
         image sized = resize_image(orig, net->w, net->h);
         char *id = basecfg(path);
         network_predict(net, sized.data);
@@ -290,7 +292,7 @@ void test_yolo(char *cfgfile, char *weightfile, char *filename, float thresh)
             if(!input) return;
             strtok(input, "\n");
         }
-        image im = load_image_color(input,0,0);
+        image im = load_image(input,0,0,net->c);
         image sized = resize_image(im, net->w, net->h);
         float *X = sized.data;
         time=clock();
