@@ -876,7 +876,10 @@ data load_data_compare(int n, char **paths, int m, int classes, int w, int h, in
         char imlabel1[4096];
         char imlabel2[4096];
         find_replace(paths[i*2],   "imgs", "labels", imlabel1);
-        find_replace(imlabel1, "jpg", "txt", imlabel1);
+        find_replace(imlabel1, ".jpg", ".txt", imlabel1);
+        find_replace(imlabel1, ".JPG", ".txt", imlabel1);
+        find_replace(imlabel1, ".png", ".txt", imlabel1);
+        find_replace(imlabel1, ".PNG", ".txt", imlabel1);
         FILE *fp1 = fopen(imlabel1, "r");
 
         while(fscanf(fp1, "%d %f", &id, &iou) == 2){
@@ -884,7 +887,10 @@ data load_data_compare(int n, char **paths, int m, int classes, int w, int h, in
         }
 
         find_replace(paths[i*2+1], "imgs", "labels", imlabel2);
-        find_replace(imlabel2, "jpg", "txt", imlabel2);
+        find_replace(imlabel2, ".jpg", ".txt", imlabel2);
+        find_replace(imlabel2, ".JPG", ".txt", imlabel2);
+        find_replace(imlabel2, ".png", ".txt", imlabel2);
+        find_replace(imlabel2, ".PNG", ".txt", imlabel2);
         FILE *fp2 = fopen(imlabel2, "r");
 
         while(fscanf(fp2, "%d %f", &id, &iou) == 2){
