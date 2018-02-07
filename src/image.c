@@ -1448,6 +1448,10 @@ image load_image_stb(char *filename, int channels)
 
 image load_image(char *filename, int w, int h, int c)
 {
+    // if user intend to use 2 channels, force to load color(3 channels) image
+    if(c == 2){
+        c = 3;
+    }
 #ifdef OPENCV
     image out = load_image_cv(filename, c);
 #else
