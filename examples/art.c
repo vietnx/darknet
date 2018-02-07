@@ -23,6 +23,7 @@ void demo_art(char *cfgfile, char *weightfile, int cam_index)
 
     while(1){
         image in = get_image_from_stream(cap);
+        image in_s;
         if(net->c == 1 && in.c == 3){
             image imGray = grayscale_image(in);
             in_s = resize_image(imGray, net->w, net->h);
