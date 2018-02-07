@@ -750,7 +750,15 @@ void threat_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_i
 
         image in = get_image_from_stream(cap);
         if(!in.data) break;
-        image in_s = resize_image(in, net->w, net->h);
+        image in_s;
+        if(net->c == 1 && in.c == 3){
+            image imGray = grayscale_image(in);
+            in_s = resize_image(imGray, net->w, net->h);
+            free_image(imGray);
+        }
+        else{
+            in_s = resize_image(in, net->w, net->h);
+        }
 
         image out = in;
         int x1 = out.w / 20;
@@ -875,7 +883,15 @@ void gun_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_inde
         gettimeofday(&tval_before, NULL);
 
         image in = get_image_from_stream(cap);
-        image in_s = resize_image(in, net->w, net->h);
+        image in_s;
+        if(net->c == 1 && in.c == 3){
+            image imGray = grayscale_image(in);
+            in_s = resize_image(imGray, net->w, net->h);
+            free_image(imGray);
+        }
+        else{
+            in_s = resize_image(in, net->w, net->h);
+        }
         show_image(in, "Threat Detection");
 
         float *predictions = network_predict(net, in_s.data);
@@ -949,7 +965,15 @@ void demo_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_ind
         gettimeofday(&tval_before, NULL);
 
         image in = get_image_from_stream(cap);
-        image in_s = resize_image(in, net->w, net->h);
+        image in_s;
+        if(net->c == 1 && in.c == 3){
+            image imGray = grayscale_image(in);
+            in_s = resize_image(imGray, net->w, net->h);
+            free_image(imGray);
+        }
+        else{
+            in_s = resize_image(in, net->w, net->h);
+        }
         show_image(in, "Classifier");
 
         float *predictions = network_predict(net, in_s.data);

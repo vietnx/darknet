@@ -592,6 +592,13 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
             strtok(input, "\n");
         }
         image im = load_image(input,0,0,net->c);
+        image im_draw;
+        if(net->c == 1){
+            im_draw = load_image_color(input, 0, 0);
+        }
+        else{
+            im_draw = im;
+        }
         image sized = letterbox_image(im, net->w, net->h);
         //image sized = resize_image(im, net->w, net->h);
         //image sized2 = resize_max(im, net->w);
@@ -615,24 +622,27 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
         get_region_boxes(l, im.w, im.h, net->w, net->h, thresh, probs, boxes, masks, 0, 0, hier_thresh, 1);
         //if (nms) do_nms_obj(boxes, probs, l.w*l.h*l.n, l.classes, nms);
         if (nms) do_nms_sort(boxes, probs, l.w*l.h*l.n, l.classes, nms);
-        draw_detections(im, l.w*l.h*l.n, thresh, boxes, probs, masks, names, alphabet, l.classes);
+        draw_detections(im_draw, l.w*l.h*l.n, thresh, boxes, probs, masks, names, alphabet, l.classes);
         if(outfile){
-            save_image(im, outfile);
+            save_image(im_draw, outfile);
         }
         else{
-            save_image(im, "predictions");
+            save_image(im_draw, "predictions");
 #ifdef OPENCV
-            cvNamedWindow("predictions", CV_WINDOW_NORMAL); 
+            cvNamedWindow("predictions", CV_WINDOW_NORMAL);
             if(fullscreen){
                 cvSetWindowProperty("predictions", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
             }
-            show_image(im, "predictions");
+            show_image(im_draw, "predictions");
             cvWaitKey(0);
             cvDestroyAllWindows();
 #endif
         }
 
         free_image(im);
+        if(net->c == 1){
+            free_image(im_draw);
+        }
         free_image(sized);
         free(boxes);
         free_ptrs((void **)probs, l.w*l.h*l.n);

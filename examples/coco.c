@@ -327,6 +327,13 @@ void test_coco(char *cfgfile, char *weightfile, char *filename, float thresh)
             strtok(input, "\n");
         }
         image im = load_image(input,0,0,net->c);
+        image im_draw;
+        if(net->c == 1){
+            im_draw = load_image_color(input, 0, 0);
+        }
+        else{
+            im_draw = im;
+        }
         image sized = resize_image(im, net->w, net->h);
         float *X = sized.data;
         time=clock();
@@ -334,10 +341,13 @@ void test_coco(char *cfgfile, char *weightfile, char *filename, float thresh)
         printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
         get_detection_boxes(l, 1, 1, thresh, probs, boxes, 0);
         if (nms) do_nms_sort(boxes, probs, l.side*l.side*l.n, l.classes, nms);
-        draw_detections(im, l.side*l.side*l.n, thresh, boxes, probs, 0, coco_classes, alphabet, 80);
-        save_image(im, "prediction");
-        show_image(im, "predictions");
+        draw_detections(im_draw, l.side*l.side*l.n, thresh, boxes, probs, 0, coco_classes, alphabet, 80);
+        save_image(im_draw, "prediction");
+        show_image(im_draw, "predictions");
         free_image(im);
+        if(net->c == 1){
+            free_image(im_draw);
+        }
         free_image(sized);
 #ifdef OPENCV
         cvWaitKey(0);

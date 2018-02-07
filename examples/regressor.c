@@ -172,7 +172,15 @@ void demo_regressor(char *datacfg, char *cfgfile, char *weightfile, int cam_inde
         gettimeofday(&tval_before, NULL);
 
         image in = get_image_from_stream(cap);
-        image in_s = letterbox_image(in, net->w, net->h);
+        image in_s;
+        if(net->c == 1 && in.c == 3){
+            image imGray = grayscale_image(in);
+            in_s = letterbox_image(imGray, net->w, net->h);
+            free_image(imGray);
+        }
+        else{
+            in_s = letterbox_image(in, net->w, net->h);
+        }
         show_image(in, "Regressor");
 
         float *predictions = network_predict(net, in_s.data);

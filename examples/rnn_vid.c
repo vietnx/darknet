@@ -131,13 +131,17 @@ void train_vid_rnn(char *cfgfile, char *weightfile)
 image save_reconstruction(network net, image *init, float *feat, char *name, int i)
 {
     image recon;
+    int c = net.c;
+    if(c == 2){
+        c = 3;
+    }
     if (init) {
         recon = copy_image(*init);
     } else {
-        recon = make_random_image(net.w, net.h, 3);
+        recon = make_random_image(net.w, net.h, c);
     }
 
-    image update = make_image(net.w, net.h, 3);
+    image update = make_image(net.w, net.h, c);
     reconstruct_picture(net, feat, recon, update, .01, .9, .1, 2, 50);
     char buff[256];
     sprintf(buff, "%s%d", name, i);
@@ -165,7 +169,15 @@ void generate_vid_rnn(char *cfgfile, char *weightfile)
     image last;
     for(i = 0; i < 25; ++i){
         image im = get_image_from_stream(cap);
-        image re = resize_image(im, extractor.w, extractor.h);
+        image re;
+        if(net.c == 1 && im.c == 3){
+            image imGray = grayscale_image(im);
+            re = resize_image(imGray, extractor.w, extractor.h);
+            free_image(imGray);
+        }
+        else{
+            re = resize_image(im, extractor.w, extractor.h);
+        }
         feat = network_predict(extractor, re.data);
         if(i > 0){
             printf("%f %f\n", mean_array(feat, 14*14*512), variance_array(feat, 14*14*512));

@@ -23,7 +23,14 @@ void demo_art(char *cfgfile, char *weightfile, int cam_index)
 
     while(1){
         image in = get_image_from_stream(cap);
-        image in_s = resize_image(in, net->w, net->h);
+        if(net->c == 1 && in.c == 3){
+            image imGray = grayscale_image(in);
+            in_s = resize_image(imGray, net->w, net->h);
+            free_image(imGray);
+        }
+        else{
+            in_s = resize_image(in, net->w, net->h);
+        }
         show_image(in, window);
 
         float *p = network_predict(net, in_s.data);
