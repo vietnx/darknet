@@ -32,6 +32,10 @@ extern int gpu_index;
     #endif
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
 typedef struct{
     int classes;
     char **names;
@@ -298,7 +302,7 @@ struct layer{
 
     struct layer *input_h_layer;
     struct layer *state_h_layer;
-	
+
     struct layer *wz;
     struct layer *uz;
     struct layer *wr;
@@ -765,5 +769,9 @@ void normalize_array(float *a, int n);
 int *read_intlist(char *s, int *n, int d);
 size_t rand_size_t();
 float rand_normal();
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif
