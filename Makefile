@@ -27,35 +27,35 @@ NVCC=/usr/local/cuda/bin/nvcc
 AR=ar
 ARFLAGS=rcs
 OPTS=-Ofast
-LDFLAGS= -lm -pthread 
+LDFLAGS= -lm -pthread
 COMMON= -Iinclude/ -Isrc/
-CFLAGS=-Wall -Wno-unknown-pragmas -Wfatal-errors -fPIC
+CFLAGS=-Wall -Wno-unknown-pragmas -Wfatal-errors -Wno-unused-result -fPIC
 
-ifeq ($(OPENMP), 1) 
+ifeq ($(OPENMP), 1)
 CFLAGS+= -fopenmp
 endif
 
-ifeq ($(DEBUG), 1) 
+ifeq ($(DEBUG), 1)
 OPTS=-O0 -g
 endif
 
 CFLAGS+=$(OPTS)
 
-ifeq ($(OPENCV), 1) 
+ifeq ($(OPENCV), 1)
 COMMON+= -DOPENCV
 CFLAGS+= -DOPENCV
-LDFLAGS+= `pkg-config --libs opencv` 
-COMMON+= `pkg-config --cflags opencv` 
+LDFLAGS+= `pkg-config --libs opencv`
+COMMON+= `pkg-config --cflags opencv`
 endif
 
-ifeq ($(GPU), 1) 
+ifeq ($(GPU), 1)
 COMMON+= -DGPU -I/usr/local/cuda/include/
 CFLAGS+= -DGPU
 LDFLAGS+= -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -lcurand
 endif
 
-ifeq ($(CUDNN), 1) 
-COMMON+= -DCUDNN 
+ifeq ($(CUDNN), 1)
+COMMON+= -DCUDNN
 CFLAGS+= -DCUDNN
 LDFLAGS+= -lcudnn
 endif
