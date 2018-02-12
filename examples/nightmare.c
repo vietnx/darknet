@@ -1,4 +1,5 @@
 #include "darknet.h"
+#include "visualization.h"
 
 #include <math.h>
 

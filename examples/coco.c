@@ -1,4 +1,6 @@
 #include "darknet.h"
+#include "demo.h"
+#include "visualization.h"
 
 #include <stdio.h>
 

@@ -1,4 +1,6 @@
 #include "darknet.h"
+#include "visualization.h"
+
 #include <sys/time.h>
 #include <assert.h>
 

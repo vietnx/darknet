@@ -1,3 +1,5 @@
+src/visualization.c
+src/visualization.h
 examples/art.c
 examples/attention.c
 examples/captcha.c

@@ -7,6 +7,8 @@
 #include "box.h"
 #include "image.h"
 #include "demo.h"
+#include "visualization.h"
+
 #include <sys/time.h>
 
 #define DEMO 1

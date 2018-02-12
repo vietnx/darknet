@@ -648,7 +648,6 @@ void rescale_weights(layer l, float scale, float trans);
 void rgbgr_weights(layer l);
 image *get_weights(layer l);
 
-void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const char *filename, char **names, int classes, int frame_skip, char *prefix, int avg, float hier_thresh, int w, int h, int fps, int fullscreen);
 void get_detection_boxes(layer l, int w, int h, float thresh, float **probs, box *boxes, int only_objectness);
 
 char *option_find_str(list *l, char *key, char *def);
@@ -677,9 +676,7 @@ image threshold_image(image im, float thresh);
 image mask_to_rgb(image mask);
 int resize_network(network *net, int w, int h);
 void free_matrix(matrix m);
-void test_resize(char *filename);
 void save_image(image p, const char *name);
-void show_image(image p, const char *name);
 image copy_image(image p);
 void draw_box_width(image a, int x1, int y1, int x2, int y2, int w, float r, float g, float b);
 float get_current_rate(network *net);
@@ -700,7 +697,6 @@ image grayscale_image(image im);
 void rotate_image_cw(image im, int times);
 double what_time_is_it_now();
 image rotate_image(image m, float rad);
-void visualize_network(network *net);
 float box_iou(box a, box b);
 void do_nms(box *boxes, float **probs, int total, int classes, float thresh);
 data load_all_cifar10();
@@ -728,11 +724,6 @@ void do_nms_obj(box *boxes, float **probs, int total, int classes, float thresh)
 
 matrix make_matrix(int rows, int cols);
 
-#ifndef __cplusplus
-#ifdef OPENCV
-image get_image_from_stream(CvCapture *cap);
-#endif
-#endif
 void free_image(image m);
 float train_network(network *net, data d);
 pthread_t load_data_in_thread(load_args args);

@@ -11,14 +11,12 @@
 
 #ifndef __cplusplus
 #ifdef OPENCV
-int fill_image_from_stream(CvCapture *cap, image im);
 image ipl_to_image(IplImage* src);
 void ipl_into_image(IplImage* src, image im);
-void flush_stream_buffer(CvCapture *cap, int n);
-void show_image_cv(image p, const char *name, IplImage *disp);
 #endif
 #endif
 
+float get_pixel(image m, int x, int y, int c);
 float get_color(int c, int x, int max);
 void draw_box(image a, int x1, int y1, int x2, int y2, float r, float g, float b);
 void draw_bbox(image a, box bbox, int w, float r, float g, float b);
@@ -49,11 +47,6 @@ void rgb_to_yuv(image im);
 image collapse_image_layers(image source, int border);
 image collapse_images_horz(image *ims, int n);
 image collapse_images_vert(image *ims, int n);
-
-void show_image_normalized(image im, const char *name);
-void show_images(image *ims, int n, char *window);
-void show_image_layers(image p, char *name);
-void show_image_collapsed(image p, char *name);
 
 void print_image(image m);
 
