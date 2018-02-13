@@ -21,6 +21,7 @@ libdarknet.a
 libdarknet.so
 darknet19_448.conv.23
 .fuse*
+build/
 
 # OS Generated #
 .DS_Store*

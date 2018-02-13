@@ -16,11 +16,28 @@ ARCH= -gencode arch=compute_30,code=sm_30 \
 # This is what I use, uncomment if you know your arch and want to specify
 # ARCH= -gencode arch=compute_52,code=compute_52
 
+PROJECT := darknet
+BUILD_DIR := build
+PREFIX ?= /usr
+LIBDIR ?= $(PREFIX)/lib
+
+LIBRARY_NAME := $(PROJECT)
+LIB_BUILD_DIR := $(BUILD_DIR)/lib
+STATIC_NAME_SHORT := lib$(LIBRARY_NAME).a
+STATIC_NAME := $(LIB_BUILD_DIR)/$(STATIC_NAME_SHORT)
+DYNAMIC_VERSION_MAJOR 		:= 1
+DYNAMIC_VERSION_MINOR 		:= 0
+DYNAMIC_VERSION_REVISION 	:= 0
+DYNAMIC_NAME_SHORT := lib$(LIBRARY_NAME).so
+DYNAMIC_SONAME_SHORT := $(DYNAMIC_NAME_SHORT).$(DYNAMIC_VERSION_MAJOR).$(DYNAMIC_VERSION_MINOR)
+DYNAMIC_VERSIONED_NAME_SHORT := $(DYNAMIC_SONAME_SHORT).$(DYNAMIC_VERSION_REVISION)
+DYNAMIC_NAME := $(LIB_BUILD_DIR)/$(DYNAMIC_VERSIONED_NAME_SHORT)
+
 VPATH=./src/:./examples
-SLIB=libdarknet.so
-ALIB=libdarknet.a
-EXEC=darknet
-OBJDIR=./obj/
+SLIB=$(DYNAMIC_NAME)
+ALIB=$(STATIC_NAME)
+EXEC=$(PROJECT)
+OBJDIR=$(BUILD_DIR)/obj/
 
 CC=gcc
 NVCC=/usr/local/cuda/bin/nvcc
@@ -72,7 +89,7 @@ OBJS = $(addprefix $(OBJDIR), $(OBJ))
 DEPS = $(wildcard src/*.h) Makefile include/darknet.h
 
 #all: obj backup results $(SLIB) $(ALIB) $(EXEC)
-all: obj  results $(SLIB) $(ALIB) $(EXEC)
+all: obj lib $(SLIB) $(ALIB) $(EXEC)
 
 
 $(EXEC): $(EXECOBJ) $(ALIB)
@@ -83,6 +100,8 @@ $(ALIB): $(OBJS)
 
 $(SLIB): $(OBJS)
 	$(CC) $(CFLAGS) -shared $^ -o $@ $(LDFLAGS)
+	@ cd $(BUILD_DIR)/lib; rm -f $(DYNAMIC_SONAME_SHORT); ln -s $(DYNAMIC_VERSIONED_NAME_SHORT) $(DYNAMIC_SONAME_SHORT)
+	@ cd $(BUILD_DIR)/lib; rm -f $(DYNAMIC_NAME_SHORT);   ln -s $(DYNAMIC_SONAME_SHORT) $(DYNAMIC_NAME_SHORT)
 
 $(OBJDIR)%.o: %.c $(DEPS)
 	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@
@@ -91,14 +110,51 @@ $(OBJDIR)%.o: %.cu $(DEPS)
 	$(NVCC) $(ARCH) $(COMMON) --compiler-options "$(CFLAGS)" -c $< -o $@
 
 obj:
-	mkdir -p obj
+	mkdir -p $(OBJDIR)
+lib:
+	mkdir -p $(LIB_BUILD_DIR)
 backup:
 	mkdir -p backup
 results:
 	mkdir -p results
 
+.PHONY: install
+install: all
+#install include file
+	install -d $(DESTDIR)$(PREFIX)/include/$(PROJECT)/
+	install -m 644 include/darknet.h $(DESTDIR)$(PREFIX)/include/$(PROJECT)/
+#install library files
+	install -d $(DESTDIR)$(LIBDIR)
+	install -m 644 $(STATIC_NAME) $(DESTDIR)$(LIBDIR)
+	install -m 644 $(DYNAMIC_NAME) $(DESTDIR)$(LIBDIR)
+	cd $(DESTDIR)$(LIBDIR); rm -f $(DYNAMIC_SONAME_SHORT); ln -s $(DYNAMIC_VERSIONED_NAME_SHORT) $(DYNAMIC_SONAME_SHORT)
+	cd $(DESTDIR)$(LIBDIR); rm -f $(DYNAMIC_NAME_SHORT); ln -s $(DYNAMIC_SONAME_SHORT) $(DYNAMIC_NAME_SHORT)
+#install executable files
+	install -d $(DESTDIR)$(PREFIX)/bin
+	install -m 644 $(PROJECT) $(DESTDIR)$(PREFIX)/bin
+	install -d $(DESTDIR)$(PREFIX)/share/$(PROJECT)/labels
+	cp data/labels/* $(DESTDIR)$(PREFIX)/share/$(PROJECT)/labels
+
+.PHONY: uninstall
+uninstall:
+	# remove include files
+	rm -rf $(DESTDIR)$(PREFIX)/include/$(PROJECT)
+	# remove libraries
+	rm -f $(DESTDIR)$(LIBDIR)/$(STATIC_NAME_SHORT)
+	rm -f $(DESTDIR)$(LIBDIR)/$(DYNAMIC_NAME_SHORT)
+	rm -f $(DESTDIR)$(LIBDIR)/$(DYNAMIC_SONAME_SHORT)
+	rm -f $(DESTDIR)$(LIBDIR)/$(DYNAMIC_VERSIONED_NAME_SHORT)
+	# remove executable files
+	rm -f $(DESTDIR)$(PREFIX)/bin/$(PROJECT)
+	rm -rf $(DESTDIR)$(PREFIX)/share/$(PROJECT)
+	# remove empty folders
+	-rmdir $(DESTDIR)$(PREFIX)/include
+	-rmdir $(DESTDIR)$(LIBDIR)
+	-rmdir $(DESTDIR)$(PREFIX)/bin
+	-rmdir $(DESTDIR)$(PREFIX)/share
+
 .PHONY: clean
 
 clean:
-	rm -rf $(OBJS) $(SLIB) $(ALIB) $(EXEC) $(EXECOBJ)
+	rm -rf $(BUILD_DIR) $(EXEC)
 
