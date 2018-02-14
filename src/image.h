@@ -17,10 +17,9 @@ void ipl_into_image(IplImage* src, image im);
 #endif
 
 float get_pixel(image m, int x, int y, int c);
+float get_pixel_extend(image m, int x, int y, int c);
+void set_pixel(image m, int x, int y, int c, float val);
 float get_color(int c, int x, int max);
-void draw_box(image a, int x1, int y1, int x2, int y2, float r, float g, float b);
-void draw_bbox(image a, box bbox, int w, float r, float g, float b);
-void draw_label(image a, int r, int c, image label, const float *rgb);
 void write_label(image a, int r, int c, image *characters, char *string, float *rgb);
 image image_distance(image a, image b);
 void scale_image(image m, float s);

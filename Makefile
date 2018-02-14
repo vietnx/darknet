@@ -18,7 +18,7 @@ ARCH= -gencode arch=compute_30,code=sm_30 \
 
 PROJECT := darknet
 BUILD_DIR := build
-PREFIX ?= /usr
+#PREFIX ?= /usr/local
 LIBDIR ?= $(PREFIX)/lib
 
 LIBRARY_NAME := $(PROJECT)
@@ -32,6 +32,7 @@ DYNAMIC_NAME_SHORT := lib$(LIBRARY_NAME).so
 DYNAMIC_SONAME_SHORT := $(DYNAMIC_NAME_SHORT).$(DYNAMIC_VERSION_MAJOR).$(DYNAMIC_VERSION_MINOR)
 DYNAMIC_VERSIONED_NAME_SHORT := $(DYNAMIC_SONAME_SHORT).$(DYNAMIC_VERSION_REVISION)
 DYNAMIC_NAME := $(LIB_BUILD_DIR)/$(DYNAMIC_VERSIONED_NAME_SHORT)
+LABELS_PATH := $(PREFIX)/share/$(PROJECT)/labels
 
 VPATH=./src/:./examples
 SLIB=$(DYNAMIC_NAME)
@@ -47,6 +48,10 @@ OPTS=-Ofast
 LDFLAGS= -lm -pthread
 COMMON= -Iinclude/ -Isrc/
 CFLAGS=-Wall -Wno-unknown-pragmas -Wfatal-errors -Wno-unused-result -fPIC
+
+ifneq ($(PREFIX),)
+CFLAGS += -DDARKNET_LABELS_PATH=\"$(LABELS_PATH)\"
+endif
 
 ifeq ($(OPENMP), 1)
 CFLAGS+= -fopenmp
@@ -131,9 +136,9 @@ install: all
 	cd $(DESTDIR)$(LIBDIR); rm -f $(DYNAMIC_NAME_SHORT); ln -s $(DYNAMIC_SONAME_SHORT) $(DYNAMIC_NAME_SHORT)
 #install executable files
 	install -d $(DESTDIR)$(PREFIX)/bin
-	install -m 644 $(PROJECT) $(DESTDIR)$(PREFIX)/bin
-	install -d $(DESTDIR)$(PREFIX)/share/$(PROJECT)/labels
-	cp data/labels/* $(DESTDIR)$(PREFIX)/share/$(PROJECT)/labels
+	install -m 755 $(PROJECT) $(DESTDIR)$(PREFIX)/bin
+	install -d $(DESTDIR)$(LABELS_PATH)
+	cp data/labels/* $(DESTDIR)$(LABELS_PATH)
 
 .PHONY: uninstall
 uninstall:

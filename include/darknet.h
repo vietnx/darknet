@@ -678,7 +678,6 @@ int resize_network(network *net, int w, int h);
 void free_matrix(matrix m);
 void save_image(image p, const char *name);
 image copy_image(image p);
-void draw_box_width(image a, int x1, int y1, int x2, int y2, int w, float r, float g, float b);
 float get_current_rate(network *net);
 void composite_3d(char *f1, char *f2, char *out, int delta);
 data load_data_old(char **paths, int n, int m, char **labels, int k, int w, int h, int c);
@@ -702,10 +701,8 @@ void do_nms(box *boxes, float **probs, int total, int classes, float thresh);
 data load_all_cifar10();
 box_label *read_boxes(char *filename, int *n);
 box float_to_box(float *f, int stride);
-void draw_detections(image im, int num, float thresh, box *boxes, float **probs, float **masks, char **names, image **alphabet, int classes);
 
 matrix network_predict_data(network *net, data test);
-image **load_alphabet();
 image get_network_image(network *net);
 float *network_predict(network *net, float *input);
 
