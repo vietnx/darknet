@@ -428,6 +428,7 @@ int resize_network(network *net, int w, int h)
         net->input_gpu = cuda_make_array(net->input, net->inputs*net->batch);
         net->truth_gpu = cuda_make_array(net->truth, net->truths*net->batch);
         if(workspace_size){
+		    printf(" try to allocate workspace, ");
             net->workspace = cuda_make_array(0, (workspace_size-1)/sizeof(float)+1);
         }
 		printf(" CUDA allocate done! \n");
