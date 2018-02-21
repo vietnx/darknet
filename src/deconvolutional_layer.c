@@ -11,7 +11,7 @@
 #include <time.h>
 
 
-static size_t get_workspace_size(layer l){
+static size_t get_workspace_size2(layer l){
     return (size_t)l.h*l.w*l.size*l.size*l.n*sizeof(float);
 }
 
@@ -158,7 +158,7 @@ layer make_deconvolutional_layer(int batch, int h, int w, int c, int n, int size
 #endif
 
     l.activation = activation;
-    l.workspace_size = get_workspace_size(l);
+    l.workspace_size = get_workspace_size2(l);
 
     fprintf(stderr, "deconv%5d %2d x%2d /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n", n, size, size, stride, w, h, c, l.out_w, l.out_h, l.out_c);
 
@@ -216,7 +216,7 @@ void resize_deconvolutional_layer(layer *l, int h, int w)
         cudnnSetTensor4dDescriptor(l->normTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, l->out_c, 1, 1); 
     #endif
 #endif
-    l->workspace_size = get_workspace_size(*l);
+    l->workspace_size = get_workspace_size2(*l);
 }
 
 void forward_deconvolutional_layer(const layer l, network net)

@@ -15,6 +15,7 @@ cudaStream_t get_cuda_stream();
 
 #ifdef CUDNN
 cudnnHandle_t cudnn_handle();
+enum {cudnn_fastest, cudnn_smallest};
 #endif
 
 #endif

@@ -22,7 +22,7 @@ void add_bias_gpu(float *output, float *biases, int batch, int n, int size);
 void backward_bias_gpu(float *bias_updates, float *delta, int batch, int n, int size);
 void adam_update_gpu(float *w, float *d, float *m, float *v, float B1, float B2, float eps, float decay, float rate, int n, int batch, int t);
 #ifdef CUDNN
-void cudnn_convolutional_setup(layer *l);
+void cudnn_convolutional_setup(layer *l, int cudnn_preference);
 #endif
 #endif
 
@@ -45,6 +45,6 @@ image get_convolutional_weight(convolutional_layer layer, int i);
 
 int convolutional_out_height(convolutional_layer layer);
 int convolutional_out_width(convolutional_layer layer);
-
+size_t get_workspace_size(layer l);
 #endif
 
