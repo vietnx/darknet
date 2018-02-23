@@ -74,7 +74,7 @@ __global__ void cuda_f32_to_f16(float* input_f32, size_t size, half *output_f16)
 {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if (idx < size) output_f16[idx] = __float2half(input_f32[idx]);
-	//if (idx < size) *((unsigned int *)output_f16 + idx) = __float2half(input_f32[idx]);
+	//if (idx < size) *((unsigned short *)output_f16 + idx) = __float2half(input_f32[idx]);
 }
 
 void cuda_convert_f32_to_f16(float* input_f32, size_t size, half *output_f16) {
@@ -85,7 +85,7 @@ __global__ void cuda_f16_to_f32(half* input_f16, size_t size, float *output_f32)
 {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if (idx < size) output_f32[idx] = __half2float(input_f16[idx]);
-	//if (idx < size) output_f32[idx] = __half2float(*((unsigned int *)input_f16 + idx));
+	//if (idx < size) output_f32[idx] = __half2float(*((unsigned short *)input_f16 + idx));
 }
 
 void cuda_convert_f16_to_f32(half* input_f16, size_t size, float *output_f32) {
@@ -141,7 +141,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
 	if (max_input16_size < input16_size) {
 		max_input16_size = input16_size;
 		cuda_free((float *)input16);
-		input16 = cuda_make_f16_from_f32_array(state.input, max_input16_size);
+		input16 = cuda_make_f16_from_f32_array(net.input, max_input16_size);
 	}
 
 	if (max_output16_size < output16_size) {
@@ -150,7 +150,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
 		output16 = cuda_make_f16_from_f32_array(NULL, max_output16_size);
 	}
 
-	cuda_convert_f32_to_f16(state.input, input16_size, input16);
+	cuda_convert_f32_to_f16(net.input, input16_size, input16);
 
 	cudnnConvolutionForward(cudnn_handle(),
 		&alpha,
@@ -160,7 +160,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
 		l.weights_gpu16,
 		l.convDesc,
 		l.fw_algo,
-		state.workspace,
+		net.workspace,
 		l.workspace_size,
 		&beta,
 		l.dstTensorDesc,
@@ -295,6 +295,7 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network net)
 
     if(net.delta_gpu){
         if(l.binary || l.xnor) swap_binary(&l);
+		// http://docs.nvidia.com/deeplearning/sdk/cudnn-developer-guide/index.html#cudnnConvolutionBackwardData
         cudnnConvolutionBackwardData(cudnn_handle(),
                 &one,
                 l.weightDesc,
