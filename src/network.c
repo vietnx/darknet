@@ -294,7 +294,7 @@ float train_network_datum(network *net)
 #if defined(GPU) && defined(CUDNN_HALF)
 	for (int i = 0; i < net->n; ++i) {
 		layer l = net->layers[i];
-		cuda_convert_f32_to_f16(l.weights_gpu, l.nweights, (half *)l.weights_gpu16);
+		cuda_convert_f32_to_f16(l.weights_gpu, l.nweights, l.weights_gpu16);
 	}
 #endif
     forward_network(net);
@@ -354,6 +354,8 @@ void set_batch_network(network *net, int b)
         net->layers[i].batch = b;
 #ifdef CUDNN
         if(net->layers[i].type == CONVOLUTIONAL){
+			cudnn_convolutional_setup(net->layers + i, cudnn_fastest);
+			/*
 			layer *l = net->layers + i;
             cudnn_convolutional_setup(l, cudnn_fastest);
 			// check for excessive memory consumption 
@@ -365,6 +367,7 @@ void set_batch_network(network *net, int b)
 				cudnn_convolutional_setup(l, cudnn_smallest);
 				l->workspace_size = get_workspace_size(*l);
 			}
+			*/
         }
         if(net->layers[i].type == DECONVOLUTIONAL){
             layer *l = net->layers + i;

@@ -123,7 +123,8 @@ size_t get_workspace_size(layer l){
 void cudnn_convolutional_setup(layer *l, int cudnn_preference)
 {
 #ifdef CUDNN_HALF
-	// TRUE_HALF_CONFIG is only supported on architectures with true fp16 support (compute capability 5.3 and 6.0): Tegra X1, Jetson TX1, DRIVE CX, DRIVE PX, Quadro GP100, Tesla P100
+	// TRUE_HALF_CONFIG is only supported on architectures with true fp16 support (compute capability 5.3 and 6.0): 
+	//   Tegra X1, Jetson TX1, DRIVE CX, DRIVE PX, Quadro GP100, Tesla P100
 	// PSEUDO_HALF_CONFIG is required for Tensor Cores - our case!
 	const cudnnDataType_t data_type = CUDNN_DATA_HALF;
 #else
@@ -146,28 +147,31 @@ void cudnn_convolutional_setup(layer *l, int cudnn_preference)
 	//   on architectures with DP4A support (compute capability 6.1 and later).
 	//cudnnDataType_t data_type = CUDNN_DATA_INT8;
     
+    // backward delta
     cudnnSetTensor4dDescriptor(l->dsrcTensorDesc, CUDNN_TENSOR_NCHW, data_type, l->batch, l->c, l->h, l->w); 
-    cudnnSetTensor4dDescriptor(l->ddstTensorDesc, CUDNN_TENSOR_NCHW, data_type, l->batch, l->out_c, l->out_h, l->out_w); 
+    cudnnSetTensor4dDescriptor(l->ddstTensorDesc, CUDNN_TENSOR_NCHW, data_type, l->batch, l->out_c, l->out_h, l->out_w);
+    cudnnSetFilter4dDescriptor(l->dweightDesc, data_type, CUDNN_TENSOR_NCHW, l->n, l->c/l->groups, l->size, l->size);
 
+    // forward
     cudnnSetTensor4dDescriptor(l->srcTensorDesc, CUDNN_TENSOR_NCHW, data_type, l->batch, l->c, l->h, l->w); 
     cudnnSetTensor4dDescriptor(l->dstTensorDesc, CUDNN_TENSOR_NCHW, data_type, l->batch, l->out_c, l->out_h, l->out_w); 
+    cudnnSetFilter4dDescriptor(l->weightDesc, data_type, CUDNN_TENSOR_NCHW, l->n, l->c/l->groups, l->size, l->size);
+
     cudnnSetTensor4dDescriptor(l->normTensorDesc, CUDNN_TENSOR_NCHW, data_type, 1, l->out_c, 1, 1); 
 
-    cudnnSetFilter4dDescriptor(l->dweightDesc, data_type, CUDNN_TENSOR_NCHW, l->n, l->c/l->groups, l->size, l->size); 
-    cudnnSetFilter4dDescriptor(l->weightDesc, data_type, CUDNN_TENSOR_NCHW, l->n, l->c/l->groups, l->size, l->size); 
-    #if CUDNN_MAJOR >= 6
+#if CUDNN_MAJOR >= 6
     cudnnSetConvolution2dDescriptor(l->convDesc, l->pad, l->pad, l->stride, l->stride, 1, 1, CUDNN_CROSS_CORRELATION, CUDNN_DATA_FLOAT);
-    #else
+#else
     cudnnSetConvolution2dDescriptor(l->convDesc, l->pad, l->pad, l->stride, l->stride, 1, 1, CUDNN_CROSS_CORRELATION);
-    #endif
+#endif
 
-    #if CUDNN_MAJOR >= 7
+#if CUDNN_MAJOR >= 7
     cudnnSetConvolutionGroupCount(l->convDesc, l->groups);
-    #else
+#else
     if(l->groups > 1){
         error("CUDNN < 7 doesn't support groups, please upgrade!");
     }
-    #endif
+#endif
 
 	int forward_algo = CUDNN_CONVOLUTION_FWD_PREFER_FASTEST;
 	int backward_algo = CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST;
@@ -309,7 +313,8 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
 
         l.weights_gpu = cuda_make_array(l.weights, l.nweights);
 #ifdef CUDNN_HALF
-        l.weights_gpu16 = cuda_make_array(l.weights, l.nweights/2);
+        l.weights_gpu16 = cuda_make_array(l.weights, l.nweights / 2);
+        l.weight_updates_gpu16 = cuda_make_array(l.weight_updates, l.nweights / 2);
 #endif
         l.weight_updates_gpu = cuda_make_array(l.weight_updates, l.nweights);
 
