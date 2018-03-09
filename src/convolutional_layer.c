@@ -313,8 +313,8 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
 
         l.weights_gpu = cuda_make_array(l.weights, l.nweights);
 #ifdef CUDNN_HALF
-        l.weights_gpu16 = cuda_make_array(l.weights, l.nweights / 2);
-        l.weight_updates_gpu16 = cuda_make_array(l.weight_updates, l.nweights / 2);
+        l.weights_gpu16 = cuda_make_array(NULL, l.nweights / 2);
+        l.weight_updates_gpu16 = cuda_make_array(NULL, l.nweights / 2);
 #endif
         l.weight_updates_gpu = cuda_make_array(l.weight_updates, l.nweights);
 

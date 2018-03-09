@@ -183,6 +183,12 @@ network *make_network(int n)
     net->seen = calloc(1, sizeof(size_t));
     net->t    = calloc(1, sizeof(int));
     net->cost = calloc(1, sizeof(float));
+#ifdef GPU
+    net->input16_gpu = calloc(1, sizeof(float *));
+    net->output16_gpu = calloc(1, sizeof(float *));
+    net->max_input16_size = calloc(1, sizeof(size_t));
+    net->max_output16_size = calloc(1, sizeof(size_t));
+#endif
     return net;
 }
 
@@ -737,6 +743,12 @@ void free_network(network *net)
 #ifdef GPU
     if(net->input_gpu) cuda_free(net->input_gpu);
     if(net->truth_gpu) cuda_free(net->truth_gpu);
+    if (*net->input16_gpu) cuda_free(*net->input16_gpu);
+    if (*net->output16_gpu) cuda_free(*net->output16_gpu);
+    if (net->input16_gpu) free(net->input16_gpu);
+    if (net->output16_gpu) free(net->output16_gpu);
+    if (net->max_input16_size) free(net->max_input16_size);
+    if (net->max_output16_size) free(net->max_output16_size);
 #endif
     free(net);
 }
