@@ -42,8 +42,10 @@ ALIB=$(STATIC_NAME)
 EXEC=$(PROJECT)
 OBJDIR=$(BUILD_DIR)/obj/
 
-CC=gcc
+CC ?= gcc
+CXX ?= g++
 NVCC=/usr/local/cuda/bin/nvcc
+NVCCFLAGS=-ccbin=$(CXX)
 AR=ar
 ARFLAGS=rcs
 OPTS=-Ofast
@@ -114,7 +116,7 @@ $(OBJDIR)%.o: %.c $(DEPS)
 	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)%.o: %.cu $(DEPS)
-	$(NVCC) $(ARCH) $(COMMON) --compiler-options "$(CFLAGS)" -c $< -o $@
+	$(NVCC) $(NVCCFLAGS) $(ARCH) $(COMMON) --compiler-options "$(CFLAGS)" -c $< -o $@
 
 obj:
 	mkdir -p $(OBJDIR)
