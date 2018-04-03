@@ -199,6 +199,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
     printf("Demo\n");
     net = load_network(cfgfile, weightfile, 0);
     set_batch_network(net, 1);
+	fuse_conv_batchnorm(net);
     pthread_t detect_thread;
     pthread_t fetch_thread;
 
