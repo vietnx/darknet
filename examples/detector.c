@@ -243,6 +243,7 @@ void validate_detector_flip(char *datacfg, char *cfgfile, char *weightfile, char
 
     network *net = load_network(cfgfile, weightfile, 0);
     set_batch_network(net, 2);
+    fuse_conv_batchnorm(net);
     fprintf(stderr, "Learning Rate: %g, Momentum: %g, Decay: %g\n", net->learning_rate, net->momentum, net->decay);
     srand(time(0));
 
@@ -377,6 +378,7 @@ void validate_detector(char *datacfg, char *cfgfile, char *weightfile, char *out
 
     network *net = load_network(cfgfile, weightfile, 0);
     set_batch_network(net, 1);
+    fuse_conv_batchnorm(net);
     fprintf(stderr, "Learning Rate: %g, Momentum: %g, Decay: %g\n", net->learning_rate, net->momentum, net->decay);
     srand(time(0));
 
@@ -495,6 +497,7 @@ void validate_detector_recall(char *cfgfile, char *weightfile)
 {
     network *net = load_network(cfgfile, weightfile, 0);
     set_batch_network(net, 1);
+    fuse_conv_batchnorm(net);
     fprintf(stderr, "Learning Rate: %g, Momentum: %g, Decay: %g\n", net->learning_rate, net->momentum, net->decay);
     srand(time(0));
 
@@ -577,6 +580,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     image **alphabet = load_alphabet();
     network *net = load_network(cfgfile, weightfile, 0);
     set_batch_network(net, 1);
+    fuse_conv_batchnorm(net);
     srand(2222222);
     double time;
     char buff[256];

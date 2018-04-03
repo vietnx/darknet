@@ -688,6 +688,7 @@ void zero_objectness(layer l);
 DARKNET_API void CALLBACK get_region_boxes(layer l, int w, int h, int netw, int neth, float thresh, float **probs, box *boxes, float **masks, int only_objectness, int *map, float tree_thresh, int relative);
 DARKNET_API void CALLBACK free_network(network *net);
 DARKNET_API void CALLBACK set_batch_network(network *net, int b);
+DARKNET_API void CALLBACK fuse_conv_batchnorm(network* net);
 void set_temp_network(network *net, float t);
 image load_image(char *filename, int w, int h, int c);
 image load_image_color(char *filename, int w, int h);
