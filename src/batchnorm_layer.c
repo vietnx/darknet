@@ -58,13 +58,12 @@ layer make_batchnorm_layer(int batch, int w, int h, int c)
 
     l.x_gpu = cuda_make_array(l.output, l.batch*l.outputs);
     l.x_norm_gpu = cuda_make_array(l.output, l.batch*l.outputs);
-    #ifdef CUDNN
+#ifdef CUDNN
     cudnnCreateTensorDescriptor(&l.normTensorDesc);
-    cudnnCreateTensorDescriptor(&l.dstTensorDesc);
-    cudnnSetTensor4dDescriptor(l.dstTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, l.batch, l.out_c, l.out_h, l.out_w); 
+    cudnnCreateTensorDescriptor(&l.normDstTensorDesc);
+    cudnnSetTensor4dDescriptor(l.normDstTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, l.batch, l.out_c, l.out_h, l.out_w); 
     cudnnSetTensor4dDescriptor(l.normTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, l.out_c, 1, 1); 
-
-    #endif
+#endif
 #endif
     return l;
 }
@@ -198,9 +197,9 @@ void forward_batchnorm_layer_gpu(layer l, network net)
                 CUDNN_BATCHNORM_SPATIAL,
                 &one,
                 &zero,
-                l.dstTensorDesc,
+                l.normDstTensorDesc,
                 l.x_gpu,
-                l.dstTensorDesc,
+                l.normDstTensorDesc,
                 l.output_gpu,
                 l.normTensorDesc,
                 l.scales_gpu,
@@ -250,11 +249,11 @@ void backward_batchnorm_layer_gpu(layer l, network net)
             &zero,
             &one,
             &one,
-            l.dstTensorDesc,
+            l.normDstTensorDesc,
             l.x_gpu,
-            l.dstTensorDesc,
+            l.normDstTensorDesc,
             l.delta_gpu,
-            l.dstTensorDesc,
+            l.normDstTensorDesc,
             l.x_norm_gpu,
             l.normTensorDesc,
             l.scales_gpu,
