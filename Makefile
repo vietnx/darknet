@@ -1,6 +1,7 @@
 GPU=1
 CUDNN=1
 OPENCV=1
+CUDNN_HALF=0
 OPENMP=0
 DEBUG=0
 
@@ -143,6 +144,10 @@ LDFLAGS += -LIBPATH:/d/Projects/Libs/cudnn-9.2-windows10-x64-v7.1/cuda/lib/x64 c
 else
 LDFLAGS+= -lcudnn
 endif
+
+ifeq ($(CUDNN_HALF), 1)
+COMMON+= -DCUDNN_HALF
+CFLAGS+= -DCUDNN_HALF
 endif
 
 OBJ=gemm$(OBJ_EXT) utils$(OBJ_EXT) cuda$(OBJ_EXT) deconvolutional_layer$(OBJ_EXT) convolutional_layer$(OBJ_EXT) list$(OBJ_EXT) image$(OBJ_EXT) activations$(OBJ_EXT) im2col$(OBJ_EXT) col2im$(OBJ_EXT) blas$(OBJ_EXT) crop_layer$(OBJ_EXT) dropout_layer$(OBJ_EXT) maxpool_layer$(OBJ_EXT) softmax_layer$(OBJ_EXT) data$(OBJ_EXT) matrix$(OBJ_EXT) network$(OBJ_EXT) connected_layer$(OBJ_EXT) cost_layer$(OBJ_EXT) parser$(OBJ_EXT) option_list$(OBJ_EXT) detection_layer$(OBJ_EXT) route_layer$(OBJ_EXT) box$(OBJ_EXT) normalization_layer$(OBJ_EXT) avgpool_layer$(OBJ_EXT) layer$(OBJ_EXT) local_layer$(OBJ_EXT) shortcut_layer$(OBJ_EXT) activation_layer$(OBJ_EXT) rnn_layer$(OBJ_EXT) gru_layer$(OBJ_EXT) crnn_layer$(OBJ_EXT) batchnorm_layer$(OBJ_EXT) region_layer$(OBJ_EXT) reorg_layer$(OBJ_EXT) tree$(OBJ_EXT)  lstm_layer$(OBJ_EXT) l2norm_layer$(OBJ_EXT) logistic_layer$(OBJ_EXT) upsample_layer$(OBJ_EXT) yolo_layer$(OBJ_EXT)
