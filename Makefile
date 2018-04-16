@@ -144,6 +144,7 @@ LDFLAGS += -LIBPATH:/d/Projects/Libs/cudnn-9.2-windows10-x64-v7.1/cuda/lib/x64 c
 else
 LDFLAGS+= -lcudnn
 endif
+endif
 
 ifeq ($(CUDNN_HALF), 1)
 COMMON+= -DCUDNN_HALF
