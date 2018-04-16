@@ -165,7 +165,47 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
 		l.dstTensorDesc,
 		output16);
 	
-	cuda_convert_f16_to_f32(output16, output16_size, l.output_gpu);
+
+	if (l.batch_normalize){
+		if (net.train){ // Training
+			copy_gpu(l.outputs*l.batch / 2, output16, 1, l.x_gpu, 1);
+			//cudaMemcpyAsync(l.x_gpu, output16, l.outputs*l.batch*sizeof(half), cudaMemcpyDefault, get_cuda_stream());
+			float one = 1;
+			float zero = 0;
+			// Batch-normalization can still take FP16 inputs and outputs, saving half the bandwidth
+			// compared to FP32, it is just that the statistics and value adjustment should be done in FP32.
+			cudnnBatchNormalizationForwardTraining(cudnn_handle(),
+				CUDNN_BATCHNORM_SPATIAL,
+				&one,
+				&zero,
+				l.normDstTensorDescF16,
+				l.x_gpu,			// input
+				l.normDstTensorDescF16,
+				output16,			// output
+				l.normTensorDesc,
+				l.scales_gpu,
+				l.biases_gpu,
+				.01,
+				l.rolling_mean_gpu,		// output (should be FP32)
+				l.rolling_variance_gpu,	// output (should be FP32)
+				.00001,
+				l.mean_gpu,			// output (should be FP32)
+				l.variance_gpu);	// output (should be FP32)
+
+			cuda_convert_f16_to_f32(output16, output16_size, l.output_gpu);
+			//forward_batchnorm_layer_gpu(l, net);
+		}
+		else{ // Detection
+			cuda_convert_f16_to_f32(output16, output16_size, l.output_gpu);
+			normalize_gpu(l.output_gpu, l.rolling_mean_gpu, l.rolling_variance_gpu, l.batch, l.out_c, l.out_h*l.out_w);
+			scale_bias_gpu(l.output_gpu, l.scales_gpu, l.batch, l.out_c, l.out_h*l.out_w);
+			add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.out_c, l.out_w*l.out_h);
+		}
+	}
+	else{ // BIAS only
+		cuda_convert_f16_to_f32(output16, output16_size, l.output_gpu);
+		add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.n, l.out_w*l.out_h);
+	}	
 
 #else
 
@@ -182,7 +222,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
                 &one,
                 l.dstTensorDesc,
                 l.output_gpu);
-#endif
+#endif	// CUDNN_HALF
 
 
 #else
@@ -207,11 +247,13 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
     }
 #endif
 
+#ifndef CUDNN_HALF
     if (l.batch_normalize) {
         forward_batchnorm_layer_gpu(l, net);
     } else {
         add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.n, l.out_w*l.out_h);
     }
+#endif // no CUDNN_HALF
 
     activate_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation);
     //if(l.dot > 0) dot_error_gpu(l);
@@ -269,11 +311,13 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network net)
     gradient_array_gpu(l.output_gpu, l.outputs*l.batch, l.activation, l.delta_gpu);
 
 
+#ifndef CUDNN_HALF
     if(l.batch_normalize){
         backward_batchnorm_layer_gpu(l, net);
     } else {
         backward_bias_gpu(l.bias_updates_gpu, l.delta_gpu, l.batch, l.n, l.out_w*l.out_h);
     }
+#endif // no CUDNN_HALF
     float *original_input = net.input_gpu;
 
     if(l.xnor) net.input_gpu = l.binary_input_gpu;
@@ -282,7 +326,6 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network net)
 	float alpha = 1, beta = 0;
 
 #ifdef CUDNN_HALF
-		
 	const size_t input16_size = l.batch*l.c*l.w*l.h;
 	const size_t delta16_size = l.batch*l.n*l.out_w*l.out_h;
 	
@@ -302,7 +345,40 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network net)
 
 	cuda_convert_f32_to_f16(net.input, input16_size, input16);
 	cuda_convert_f32_to_f16(l.delta_gpu, delta16_size, delta16);
-	
+
+	if (l.batch_normalize) {
+		//if (!net.train) {
+		//	l.mean_gpu = l.rolling_mean_gpu;
+		//	l.variance_gpu = l.rolling_variance_gpu;
+		//}
+		float one = 1;
+		float zero = 0;
+		cudnnBatchNormalizationBackward(cudnn_handle(),
+			CUDNN_BATCHNORM_SPATIAL,
+			&one,
+			&zero,
+			&one,
+			&one,
+			l.normDstTensorDescF16,
+			l.x_gpu,				// input
+			l.normDstTensorDescF16,
+			delta16,				// input
+			l.normDstTensorDescF16,
+			l.x_norm_gpu,			// output
+			l.normTensorDesc,
+			l.scales_gpu,			// output (should be FP32)
+			l.scale_updates_gpu,	// output (should be FP32)
+			l.bias_updates_gpu,		// output (should be FP32)
+			.00001,
+			l.mean_gpu,				// input (should be FP32)
+			l.variance_gpu);		// input (should be FP32)
+		copy_gpu(l.outputs*l.batch / 2, l.x_norm_gpu, 1, delta16, 1);
+		//cudaMemcpyAsync(delta16, l.x_norm_gpu, l.outputs*l.batch * sizeof(half), cudaMemcpyDefault, get_cuda_stream());
+	}
+	else{
+		backward_bias_gpu(l.bias_updates_gpu, l.delta_gpu, l.batch, l.n, l.out_w*l.out_h);
+	}
+
 	// convert input: net.input (x), l.delta_gpu (y) from fp32 to fp16
 	// get output: l.weight_updates_gpu (dw) and convert it to fp32 (ONLY if it is fp16)
 

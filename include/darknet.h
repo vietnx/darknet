@@ -443,6 +443,7 @@ struct layer{
     cudnnTensorDescriptor_t dsrcTensorDesc, ddstTensorDesc;
     cudnnTensorDescriptor_t normTensorDesc;
     cudnnTensorDescriptor_t normDstTensorDesc;
+    cudnnTensorDescriptor_t normDstTensorDescF16;
     cudnnFilterDescriptor_t weightDesc;
     cudnnFilterDescriptor_t dweightDesc;
     cudnnConvolutionDescriptor_t convDesc;

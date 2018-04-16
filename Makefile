@@ -8,8 +8,7 @@ DEBUG=0
 ARCH= -gencode arch=compute_50,code=sm_50 \
 	-gencode arch=compute_52,code=sm_52 \
 	-gencode arch=compute_60,code=sm_60 \
-	-gencode arch=compute_61,code=sm_61 \
-	-gencode arch=compute_70,code=sm_70
+	-gencode arch=compute_61,code=sm_61
 #      -gencode arch=compute_20,code=[sm_20,sm_21] \ This one is deprecated?
 
 # This is what I use, uncomment if you know your arch and want to specify
@@ -149,6 +148,7 @@ endif
 ifeq ($(CUDNN_HALF), 1)
 COMMON+= -DCUDNN_HALF
 CFLAGS+= -DCUDNN_HALF
+ARCH+= -gencode arch=compute_70,code=[sm_70,compute_70]
 endif
 
 OBJ=gemm$(OBJ_EXT) utils$(OBJ_EXT) cuda$(OBJ_EXT) deconvolutional_layer$(OBJ_EXT) convolutional_layer$(OBJ_EXT) list$(OBJ_EXT) image$(OBJ_EXT) activations$(OBJ_EXT) im2col$(OBJ_EXT) col2im$(OBJ_EXT) blas$(OBJ_EXT) crop_layer$(OBJ_EXT) dropout_layer$(OBJ_EXT) maxpool_layer$(OBJ_EXT) softmax_layer$(OBJ_EXT) data$(OBJ_EXT) matrix$(OBJ_EXT) network$(OBJ_EXT) connected_layer$(OBJ_EXT) cost_layer$(OBJ_EXT) parser$(OBJ_EXT) option_list$(OBJ_EXT) detection_layer$(OBJ_EXT) route_layer$(OBJ_EXT) box$(OBJ_EXT) normalization_layer$(OBJ_EXT) avgpool_layer$(OBJ_EXT) layer$(OBJ_EXT) local_layer$(OBJ_EXT) shortcut_layer$(OBJ_EXT) activation_layer$(OBJ_EXT) rnn_layer$(OBJ_EXT) gru_layer$(OBJ_EXT) crnn_layer$(OBJ_EXT) batchnorm_layer$(OBJ_EXT) region_layer$(OBJ_EXT) reorg_layer$(OBJ_EXT) tree$(OBJ_EXT)  lstm_layer$(OBJ_EXT) l2norm_layer$(OBJ_EXT) logistic_layer$(OBJ_EXT) upsample_layer$(OBJ_EXT) yolo_layer$(OBJ_EXT)
