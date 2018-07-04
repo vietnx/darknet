@@ -1,9 +1,34 @@
-#ifndef DARKNET_API
-#define DARKNET_API
+#ifndef __DARKNET_H__
+#define __DARKNET_H__
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifdef _WIN32
+#ifndef HAVE_STRUCT_TIMESPEC
+#define HAVE_STRUCT_TIMESPEC 1
+#endif
+#ifndef HAVE_SIGNAL_H
+#define HAVE_SIGNAL_H 1
+#endif
+#endif
 #include <pthread.h>
+
+#include <time.h>
+
+#ifdef _WIN32
+#ifdef DLL_EXPORT
+#define DARKNET_API __declspec(dllexport)
+#else
+#define DARKNET_API __declspec(dllimport)
+#endif
+#ifndef CALLBACK
+#define CALLBACK __stdcall
+#endif
+#else
+#define DARKNET_API
+#define CALLBACK
+#endif
 
 #define SECRET_NUM -1234
 extern int gpu_index;
@@ -565,7 +590,7 @@ typedef struct{
 } box_label;
 
 
-network *load_network(char *cfg, char *weights, int clear);
+DARKNET_API network * CALLBACK load_network(char *cfg, char *weights, int clear);
 load_args get_base_args(network *net);
 
 void free_data(data d);
@@ -660,15 +685,15 @@ void save_weights_upto(network *net, char *filename, int cutoff);
 void load_weights_upto(network *net, char *filename, int start, int cutoff);
 
 void zero_objectness(layer l);
-void get_region_boxes(layer l, int w, int h, int netw, int neth, float thresh, float **probs, box *boxes, float **masks, int only_objectness, int *map, float tree_thresh, int relative);
-void free_network(network *net);
-void set_batch_network(network *net, int b);
+DARKNET_API void CALLBACK get_region_boxes(layer l, int w, int h, int netw, int neth, float thresh, float **probs, box *boxes, float **masks, int only_objectness, int *map, float tree_thresh, int relative);
+DARKNET_API void CALLBACK free_network(network *net);
+DARKNET_API void CALLBACK set_batch_network(network *net, int b);
 void set_temp_network(network *net, float t);
 image load_image(char *filename, int w, int h, int c);
 image load_image_color(char *filename, int w, int h);
 image make_image(int w, int h, int c);
 image resize_image(image im, int w, int h);
-image letterbox_image(image im, int w, int h);
+DARKNET_API image CALLBACK letterbox_image(image im, int w, int h);
 image crop_image(image im, int dx, int dy, int w, int h);
 image resize_min(image im, int min);
 image resize_max(image im, int max);
@@ -704,7 +729,7 @@ box float_to_box(float *f, int stride);
 
 matrix network_predict_data(network *net, data test);
 image get_network_image(network *net);
-float *network_predict(network *net, float *input);
+DARKNET_API float* CALLBACK network_predict(network *net, float *input);
 
 int network_width(network *net);
 int network_height(network *net);
@@ -716,12 +741,12 @@ box *make_boxes(network *net);
 void reset_network_state(network *net, int b);
 
 char **get_labels(char *filename);
-void do_nms_sort(box *boxes, float **probs, int total, int classes, float thresh);
-void do_nms_obj(box *boxes, float **probs, int total, int classes, float thresh);
+DARKNET_API void CALLBACK do_nms_sort(box *boxes, float **probs, int total, int classes, float thresh);
+DARKNET_API void CALLBACK do_nms_obj(box *boxes, float **probs, int total, int classes, float thresh);
 
 matrix make_matrix(int rows, int cols);
 
-void free_image(image m);
+DARKNET_API void CALLBACK free_image(image m);
 float train_network(network *net, data d);
 pthread_t load_data_in_thread(load_args args);
 void load_data_blocking(load_args args);
@@ -735,7 +760,7 @@ int find_arg(int argc, char* argv[], char *arg);
 char *find_char_arg(int argc, char **argv, char *arg, char *def);
 char *basecfg(char *cfgfile);
 void find_replace(char *str, char *orig, char *rep, char *output);
-void free_ptrs(void **ptrs, int n);
+DARKNET_API void CALLBACK free_ptrs(void **ptrs, int n);
 char *fgetl(FILE *fp);
 void strip(char *s);
 float sec(clock_t clocks);

@@ -1,8 +1,6 @@
 #include "darknet.h"
 #include "visualization.h"
 
-#include <sys/time.h>
-
 void demo_art(char *cfgfile, char *weightfile, int cam_index)
 {
 #ifdef OPENCV

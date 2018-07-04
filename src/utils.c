@@ -3,7 +3,12 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__MINGW32__)
 #include <unistd.h>
+#else
+#include <Windows.h>
+#include <io.h>
+#endif
 #include <float.h>
 #include <limits.h>
 #include <time.h>
@@ -25,9 +30,18 @@ double get_wall_time()
 
 double what_time_is_it_now()
 {
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__MINGW32__)
     struct timespec now;
     clock_gettime(CLOCK_REALTIME, &now);
     return now.tv_sec + now.tv_nsec*1e-9;
+#else
+    FILETIME systemTime;
+    GetSystemTimePreciseAsFileTime(&systemTime);
+    ULARGE_INTEGER tmp;
+    tmp.LowPart = systemTime.dwLowDateTime;
+    tmp.HighPart = systemTime.dwHighDateTime;
+    return tmp.QuadPart / 10000; // 100ns interval
+#endif
 }
 
 int *read_intlist(char *gpu_list, int *ngpus, int d)
@@ -75,11 +89,11 @@ void sorta_shuffle(void *arr, size_t n, size_t size, size_t sections)
         size_t start = n*i/sections;
         size_t end = n*(i+1)/sections;
         size_t num = end-start;
-        shuffle(arr+(start*size), num, size);
+        shuffle((char*)arr+(start*size), num, size);
     }
 }
 
-void shuffle(void *arr, size_t n, size_t size)
+void shuffle(char *arr, size_t n, size_t size)
 {
     size_t i;
     void *swp = calloc(1, size);

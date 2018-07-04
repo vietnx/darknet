@@ -1,7 +1,6 @@
 #include "darknet.h"
 #include "visualization.h"
 
-#include <sys/time.h>
 #include <assert.h>
 
 void extend_data_truth(data *d, int n, float val)

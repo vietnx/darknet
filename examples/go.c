@@ -2,11 +2,25 @@
 
 #include <assert.h>
 #include <math.h>
+
+#ifdef _WIN32
+#include <Windows.h>
+#ifndef sleep
+#define sleep(x) Sleep((x)*1000)
+#endif
+#ifndef popen
+#define popen _popen
+#endif
+#ifndef pclose
+#define pclose _pclose
+#endif
+#else
 #include <unistd.h>
+#endif
 
 int inverted = 1;
 int noi = 1;
-static const int nind = 10;
+#define nind 10
 int legal_go(float *b, float *ko, int p, int r, int c);
 int check_ko(float *x, float *ko);
 
@@ -783,6 +797,14 @@ int print_game(float *board, FILE *fp)
 
 int stdin_ready()
 {
+#ifdef _WIN32
+    HANDLE stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
+    INPUT_RECORD input_record;
+    DWORD number_event = 0;
+    if(PeekConsoleInput(stdin_handle, &input_record, 1, &number_event) && number_event){
+        return 1;
+    }
+#else
     fd_set readfds;
     FD_ZERO(&readfds);
 
@@ -794,6 +816,7 @@ int stdin_ready()
     if (select(1, &readfds, NULL, NULL, &timeout)){
         return 1;
     }
+#endif
     return 0;
 }
 

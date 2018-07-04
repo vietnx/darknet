@@ -9,8 +9,6 @@
 #include "demo.h"
 #include "visualization.h"
 
-#include <sys/time.h>
-
 #define DEMO 1
 
 #ifdef OPENCV

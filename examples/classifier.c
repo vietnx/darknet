@@ -1,7 +1,6 @@
 #include "darknet.h"
 #include "visualization.h"
 
-#include <sys/time.h>
 #include <assert.h>
 
 float *get_regression_values(char **labels, int n)
