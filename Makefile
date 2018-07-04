@@ -30,7 +30,9 @@ DYNAMIC_VERSION_MINOR 		:= 0
 DYNAMIC_VERSION_REVISION 	:= 0
 ifeq ($(OS),Windows_NT)
 DYNAMIC_NAME_SHORT := lib$(LIBRARY_NAME).dll
+IMPORT_NAME_SHORT := lib$(LIBRARY_NAME).lib
 DYNAMIC_NAME := $(LIB_BUILD_DIR)/$(DYNAMIC_NAME_SHORT)
+IMPORT_NAME := $(LIB_BUILD_DIR)/$(IMPORT_NAME_SHORT)
 else
 DYNAMIC_NAME_SHORT := lib$(LIBRARY_NAME).so
 DYNAMIC_SONAME_SHORT := $(DYNAMIC_NAME_SHORT).$(DYNAMIC_VERSION_MAJOR).$(DYNAMIC_VERSION_MINOR)
@@ -56,7 +58,8 @@ CFLAGS += -DWIN32 -D_WINDOWS -DNDEBUG -DDLL_EXPORT -DHAVE_STRUCT_TIMESPEC=1 -DHA
 CFLAGS += -MD
 LDFLAGS = -LIBPATH:/d/Projects/Libs/pthreads-w32-2-9-1-release/Pre-built.2/lib/x64 pthreadVC2.lib
 LDFLAGS += kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib
-LDFLAGS += -MACHINE:X64 -SUBSYSTEM:CONSOLE
+LDFLAGS += -MACHINE:X64 -SUBSYSTEM:CONSOLE -NOLOGO
+LDFLAGS_SHARED := -IMPLIB:$(IMPORT_NAME)
 OPTS = -O2
 OBJ_EXT = .obj
 else
@@ -146,7 +149,7 @@ $(ALIB): $(OBJS)
 
 $(SLIB): $(OBJS)
 ifeq ($(OS),Windows_NT)
-	$(CC) $(CFLAGS) $^ -Fe$@ -LD -link $(LDFLAGS)
+	$(CC) $(CFLAGS) $^ -Fe$@ -LD -link $(LDFLAGS) $(LDFLAGS_SHARED)
 else
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(VERSIONFLAGS) -shared
 	@ cd $(BUILD_DIR)/lib; rm -f $(DYNAMIC_SONAME_SHORT); ln -s $(DYNAMIC_VERSIONED_NAME_SHORT) $(DYNAMIC_SONAME_SHORT)
@@ -181,8 +184,12 @@ install: all
 	install -d $(DESTDIR)$(LIBDIR)
 	install -m 644 $(STATIC_NAME) $(DESTDIR)$(LIBDIR)
 	install -m 644 $(DYNAMIC_NAME) $(DESTDIR)$(LIBDIR)
+ifeq ($(OS),Windows_NT)
+	install -m 644 $(IMPORT_NAME) $(DESTDIR)$(LIBDIR)
+else
 	cd $(DESTDIR)$(LIBDIR); rm -f $(DYNAMIC_SONAME_SHORT); ln -s $(DYNAMIC_VERSIONED_NAME_SHORT) $(DYNAMIC_SONAME_SHORT)
 	cd $(DESTDIR)$(LIBDIR); rm -f $(DYNAMIC_NAME_SHORT); ln -s $(DYNAMIC_SONAME_SHORT) $(DYNAMIC_NAME_SHORT)
+endif
 #install executable files
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install -m 755 $(PROJECT) $(DESTDIR)$(PREFIX)/bin
@@ -196,8 +203,12 @@ uninstall:
 	# remove libraries
 	rm -f $(DESTDIR)$(LIBDIR)/$(STATIC_NAME_SHORT)
 	rm -f $(DESTDIR)$(LIBDIR)/$(DYNAMIC_NAME_SHORT)
+ifeq ($(OS),Windows_NT)
+	rm -f $(DESTDIR)$(LIBDIR)/$(IMPORT_NAME_SHORT)
+else
 	rm -f $(DESTDIR)$(LIBDIR)/$(DYNAMIC_SONAME_SHORT)
 	rm -f $(DESTDIR)$(LIBDIR)/$(DYNAMIC_VERSIONED_NAME_SHORT)
+endif
 	# remove executable files
 	rm -f $(DESTDIR)$(PREFIX)/bin/$(PROJECT)
 	rm -rf $(DESTDIR)$(PREFIX)/share/$(PROJECT)
