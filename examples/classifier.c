@@ -1,9 +1,6 @@
 #include "darknet.h"
 #include "visualization.h"
 
-#ifndef _WIN32
-#include <sys/time.h>
-#endif
 #include <assert.h>
 
 float *get_regression_values(char **labels, int n)
@@ -748,8 +745,8 @@ void threat_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_i
 
     while(1){
         ++count;
-        struct timeval tval_before, tval_after, tval_result;
-        gettimeofday(&tval_before, NULL);
+        double time_before, time_after;
+        time_before = what_time_is_it_now();
 
         image in = get_image_from_stream(cap);
         if(!in.data) break;
@@ -840,10 +837,8 @@ void threat_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_i
         free_image(in_s);
         free_image(in);
 
-        gettimeofday(&tval_after, NULL);
-        timersub(&tval_after, &tval_before, &tval_result);
-        float curr = 1000000.f/((long int)tval_result.tv_usec);
-        fps = .9*fps + .1*curr;
+        time_after = what_time_is_it_now();
+        fps = 1./(time_after - time_before);
     }
 #endif
 }
@@ -882,8 +877,8 @@ void gun_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_inde
     int i;
 
     while(1){
-        struct timeval tval_before, tval_after, tval_result;
-        gettimeofday(&tval_before, NULL);
+        double time_before, time_after;
+        time_before = what_time_is_it_now();
 
         image in = get_image_from_stream(cap);
         image in_s;
@@ -925,10 +920,8 @@ void gun_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_inde
 
         cvWaitKey(10);
 
-        gettimeofday(&tval_after, NULL);
-        timersub(&tval_after, &tval_before, &tval_result);
-        float curr = 1000000.f/((long int)tval_result.tv_usec);
-        fps = .9*fps + .1*curr;
+        time_after = what_time_is_it_now();
+        fps = 1./(time_after - time_before);
     }
 #endif
 }
@@ -964,8 +957,8 @@ void demo_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_ind
     int i;
 
     while(1){
-        struct timeval tval_before, tval_after, tval_result;
-        gettimeofday(&tval_before, NULL);
+        double time_before, time_after;
+        time_before = what_time_is_it_now();
 
         image in = get_image_from_stream(cap);
         image in_s;
@@ -997,10 +990,8 @@ void demo_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_ind
 
         cvWaitKey(10);
 
-        gettimeofday(&tval_after, NULL);
-        timersub(&tval_after, &tval_before, &tval_result);
-        float curr = 1000000.f/((long int)tval_result.tv_usec);
-        fps = .9*fps + .1*curr;
+        time_after = what_time_is_it_now();
+        fps = 1./(time_after - time_before);
     }
 #endif
 }

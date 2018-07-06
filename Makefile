@@ -93,8 +93,13 @@ CFLAGS+=$(OPTS)
 ifeq ($(OPENCV), 1)
 COMMON+= -DOPENCV
 CFLAGS+= -DOPENCV
+ifeq ($(OS),Windows_NT)
+COMMON += -I/c/opencv/build/include
+LDFLAGS += -LIBPATH:/c/opencv/build/x64/vc14/lib opencv_world331.lib
+else
 LDFLAGS+= `pkg-config --libs opencv`
 COMMON+= `pkg-config --cflags opencv`
+endif
 endif
 
 ifeq ($(GPU), 1)

@@ -1,9 +1,6 @@
 #include "darknet.h"
 #include "visualization.h"
 
-#ifndef _WIN32
-#include <sys/time.h>
-#endif
 #include <assert.h>
 
 void train_segmenter(char *datacfg, char *cfgfile, char *weightfile, int *gpus, int ngpus, int clear, int display)
@@ -201,8 +198,8 @@ void demo_segmenter(char *datacfg, char *cfg, char *weights, int cam_index, cons
     float fps = 0;
 
     while(1){
-        struct timeval tval_before, tval_after, tval_result;
-        gettimeofday(&tval_before, NULL);
+        double time_before, time_after;
+        time_before = what_time_is_it_now();
 
         image in = get_image_from_stream(cap);
         image in_s;
@@ -231,10 +228,8 @@ void demo_segmenter(char *datacfg, char *cfg, char *weights, int cam_index, cons
 
         cvWaitKey(10);
 
-        gettimeofday(&tval_after, NULL);
-        timersub(&tval_after, &tval_before, &tval_result);
-        float curr = 1000000.f/((long int)tval_result.tv_usec);
-        fps = .9*fps + .1*curr;
+        time_after = what_time_is_it_now();
+        fps = 1./(time_after - time_before);
     }
 #endif
 }

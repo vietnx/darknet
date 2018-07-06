@@ -3,11 +3,11 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__MINGW32__)
-#include <unistd.h>
-#else
+#ifdef _WIN32
 #include <Windows.h>
 #include <io.h>
+#else
+#include <unistd.h>
 #endif
 #include <float.h>
 #include <limits.h>
@@ -30,17 +30,17 @@ double get_wall_time()
 
 double what_time_is_it_now()
 {
-#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__MINGW32__)
-    struct timespec now;
-    clock_gettime(CLOCK_REALTIME, &now);
-    return now.tv_sec + now.tv_nsec*1e-9;
-#else
+#ifdef _WIN32
     FILETIME systemTime;
     GetSystemTimePreciseAsFileTime(&systemTime);
     ULARGE_INTEGER tmp;
     tmp.LowPart = systemTime.dwLowDateTime;
     tmp.HighPart = systemTime.dwHighDateTime;
-    return tmp.QuadPart / 10000; // 100ns interval
+    return tmp.QuadPart / 10000000.0; // 100ns interval
+#else
+    struct timespec now;
+    clock_gettime(CLOCK_REALTIME, &now);
+    return now.tv_sec + now.tv_nsec*1e-9;
 #endif
 }
 
