@@ -644,10 +644,10 @@ void update_network(network *net);
 
 
 float dot_cpu(int N, float *X, int INCX, float *Y, int INCY);
-void axpy_cpu(int N, float ALPHA, float *X, int INCX, float *Y, int INCY);
+DARKNET_API void CALLBACK axpy_cpu(int N, float ALPHA, float *X, int INCX, float *Y, int INCY);
 void copy_cpu(int N, float *X, int INCX, float *Y, int INCY);
 void scal_cpu(int N, float ALPHA, float *X, int INCX);
-void fill_cpu(int N, float ALPHA, float * X, int INCX);
+DARKNET_API void CALLBACK fill_cpu(int N, float ALPHA, float * X, int INCX);
 void normalize_cpu(float *x, float *mean, float *variance, int batch, int filters, int spatial);
 void softmax(float *input, int n, float temp, int stride, float *output);
 
@@ -764,8 +764,8 @@ int network_width(network *net);
 int network_height(network *net);
 float *network_predict_image(network *net, image im);
 void network_detect(network *net, image im, float thresh, float hier_thresh, float nms, detection *dets);
-detection *get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num);
-void free_detections(detection *dets, int n);
+DARKNET_API detection* CALLBACK get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num);
+DARKNET_API void CALLBACK free_detections(detection *dets, int n);
 
 void reset_network_state(network *net, int b);
 
