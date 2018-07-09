@@ -33,6 +33,7 @@ void train_regressor(char *datacfg, char *cfgfile, char *weightfile, int *gpus, 
 
     char *backup_directory = option_find_str(options, "backup", "/backup/");
     char *train_list = option_find_str(options, "train", "data/train.list");
+    int classes = option_find_int(options, "classes", 1);
 
     list *plist = get_paths(train_list);
     char **paths = (char **)list_to_array(plist);
@@ -45,9 +46,10 @@ void train_regressor(char *datacfg, char *cfgfile, char *weightfile, int *gpus, 
     args.h = net->h;
     args.c = net->c;
     args.threads = 32;
+    args.classes = classes;
 
-    args.min = net->min_crop;
-    args.max = net->max_crop;
+    args.min = net->min_ratio*net->w;
+    args.max = net->max_ratio*net->w;
     args.angle = net->angle;
     args.aspect = net->aspect;
     args.exposure = net->exposure;
@@ -162,6 +164,10 @@ void demo_regressor(char *datacfg, char *cfgfile, char *weightfile, int cam_inde
     }else{
         cap = cvCaptureFromCAM(cam_index);
     }
+    list *options = read_data_cfg(datacfg);
+    int classes = option_find_int(options, "classes", 1);
+    char *name_list = option_find_str(options, "names", 0);
+    char **names = get_labels(name_list);
 
     if(!cap) error("Couldn't connect to webcam.\n");
     cvNamedWindow("Regressor", CV_WINDOW_NORMAL); 
@@ -176,11 +182,11 @@ void demo_regressor(char *datacfg, char *cfgfile, char *weightfile, int cam_inde
         image in_s;
         if(net->c == 1 && in.c == 3){
             image imGray = grayscale_image(in);
-            in_s = letterbox_image(imGray, net->w, net->h);
+            in_s = center_crop_image(imGray, net->w, net->h);
             free_image(imGray);
         }
         else{
-            in_s = letterbox_image(in, net->w, net->h);
+            in_s = center_crop_image(in, net->w, net->h);
         }
         show_image(in, "Regressor");
 
@@ -190,10 +196,13 @@ void demo_regressor(char *datacfg, char *cfgfile, char *weightfile, int cam_inde
         printf("\033[1;1H");
         printf("\nFPS:%.0f\n",fps);
 
-        printf("People: %f\n", predictions[0]);
+        int i;
+        for(i = 0; i < classes; ++i){
+            printf("%s: %f\n", names[i], predictions[i]);
+        }
 
-        free_image(in_s);
         free_image(in);
+        free_image(in_s);
 
         cvWaitKey(10);
 

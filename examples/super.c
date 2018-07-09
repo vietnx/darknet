@@ -1,4 +1,5 @@
 #include "darknet.h"
+#include "visualization.h"
 
 void train_super(char *cfgfile, char *weightfile, int clear)
 {
@@ -94,6 +95,7 @@ void test_super(char *cfgfile, char *weightfile, char *filename)
         image out = get_network_image(net);
         printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
         save_image(out, "out");
+        show_image(out, "out");
 
         free_image(im);
         if (filename) break;

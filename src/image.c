@@ -89,7 +89,6 @@ static float bilinear_interpolate(image im, float x, float y, int c)
     return val;
 }
 
-
 void transpose_image(image im)
 {
     assert(im.w == im.h);
@@ -172,6 +171,35 @@ void ghost_image(image source, image dest, int dx, int dy)
                 float v2 = get_pixel(dest, dx+x,dy+y,k);
                 float val = alpha*v1 + (1-alpha)*v2;
                 set_pixel(dest, dx+x, dy+y, k, val);
+            }
+        }
+    }
+}
+
+void blocky_image(image im, int s)
+{
+    int i,j,k;
+    for(k = 0; k < im.c; ++k){
+        for(j = 0; j < im.h; ++j){
+            for(i = 0; i < im.w; ++i){
+                im.data[i + im.w*(j + im.h*k)] = im.data[i/s*s + im.w*(j/s*s + im.h*k)];
+            }
+        }
+    }
+}
+
+void censor_image(image im, int dx, int dy, int w, int h)
+{
+    int i,j,k;
+    int s = 32;
+    if(dx < 0) dx = 0;
+    if(dy < 0) dy = 0;
+
+    for(k = 0; k < im.c; ++k){
+        for(j = dy; j < dy + h && j < im.h; ++j){
+            for(i = dx; i < dx + w && i < im.w; ++i){
+                im.data[i + im.w*(j + im.h*k)] = im.data[i/s*s + im.w*(j/s*s + im.h*k)];
+                //im.data[i + j*im.w + k*im.w*im.h] = 0;
             }
         }
     }
@@ -447,8 +475,8 @@ void place_image(image im, int w, int h, int dx, int dy, image canvas)
     for(c = 0; c < im.c; ++c){
         for(y = 0; y < h; ++y){
             for(x = 0; x < w; ++x){
-                int rx = ((float)x / w) * im.w;
-                int ry = ((float)y / h) * im.h;
+                float rx = ((float)x / w) * im.w;
+                float ry = ((float)y / h) * im.h;
                 float val = bilinear_interpolate(im, rx, ry, c);
                 set_pixel(canvas, x + dx, y + dy, c, val);
             }
