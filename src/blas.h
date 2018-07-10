@@ -40,7 +40,7 @@ void softmax_x_ent_cpu(int n, float *pred, float *truth, float *delta, float *er
 void weighted_sum_cpu(float *a, float *b, float *s, int num, float *c);
 void weighted_delta_cpu(float *a, float *b, float *s, float *da, float *db, float *ds, int n, float *dc);
 
-void softmax(float *input, int n, float temp, int stride, float *output);
+DARKNET_API void CALLBACK softmax(float *input, int n, float temp, int stride, float *output);
 void softmax_cpu(float *input, int n, int batch, int batch_offset, int groups, int group_offset, int stride, float temp, float *output);
 void upsample_cpu(float *in, int w, int h, int c, int batch, int stride, int forward, float scale, float *out);
 
@@ -48,9 +48,9 @@ void upsample_cpu(float *in, int w, int h, int c, int batch, int stride, int for
 #include "cuda.h"
 #include "tree.h"
 
-void axpy_gpu(int N, float ALPHA, float * X, int INCX, float * Y, int INCY);
+DARKNET_API void CALLBACK axpy_gpu(int N, float ALPHA, float * X, int INCX, float * Y, int INCY);
 void axpy_gpu_offset(int N, float ALPHA, float * X, int OFFX, int INCX, float * Y, int OFFY, int INCY);
-void copy_gpu(int N, float * X, int INCX, float * Y, int INCY);
+DARKNET_API void CALLBACK copy_gpu(int N, float * X, int INCX, float * Y, int INCY);
 void copy_gpu_offset(int N, float * X, int OFFX, int INCX, float * Y, int OFFY, int INCY);
 void add_gpu(int N, float ALPHA, float * X, int INCX);
 void supp_gpu(int N, float ALPHA, float * X, int INCX);

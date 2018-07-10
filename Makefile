@@ -45,6 +45,7 @@ SLIB=$(DYNAMIC_NAME)
 ALIB=$(STATIC_NAME)
 EXEC=$(PROJECT)
 OBJDIR=$(BUILD_DIR)/obj/
+EXECOBJDIR = $(BUILD_DIR)/execobj/
 
 ifeq ($(OS),Windows_NT)
 CC := cl
@@ -52,8 +53,9 @@ CXX := cl
 NVCC=nvcc
 NVCCFLAGS = -ccbin=cl
 CFLAGS =  -I/d/Projects/Libs/pthreads-w32-2-9-1-release/Pre-built.2/include
-CFLAGS += -DWIN32 -D_WINDOWS -DNDEBUG -DDLL_EXPORT -DHAVE_STRUCT_TIMESPEC=1 -DHAVE_SIGNAL_H=1
+CFLAGS += -DWIN32 -D_WINDOWS -DNDEBUG -DHAVE_STRUCT_TIMESPEC=1 -DHAVE_SIGNAL_H=1
 CFLAGS += -MD
+CFLAGS_SHARED := -DDLL_EXPORT
 LDFLAGS = -LIBPATH:/d/Projects/Libs/pthreads-w32-2-9-1-release/Pre-built.2/lib/x64 pthreadVC2.lib
 LDFLAGS += kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib
 LDFLAGS += -MACHINE:X64 -SUBSYSTEM:CONSOLE -NOLOGO
@@ -69,6 +71,8 @@ CFLAGS = -Wall -Wno-unused-result -Wno-unknown-pragmas -Wfatal-errors -fPIC
 LDFLAGS += -lm -pthread
 OPTS = -Ofast
 OBJ_EXT = .o
+LDFLAGS_EXEC = -L$(LIB_BUILD_DIR) -l$(DYNAMIC_NAME_SHORT)
+LDFLAGS_EXEC += -Wl,-rpath,$(LIB_BUILD_DIR)
 endif
 AR=ar
 ARFLAGS=rcs
@@ -132,19 +136,19 @@ ifeq ($(GPU), 1)
 OBJ+=convolutional_kernels$(OBJ_EXT) deconvolutional_kernels$(OBJ_EXT) activation_kernels$(OBJ_EXT) im2col_kernels$(OBJ_EXT) col2im_kernels$(OBJ_EXT) blas_kernels$(OBJ_EXT) crop_layer_kernels$(OBJ_EXT) dropout_layer_kernels$(OBJ_EXT) maxpool_layer_kernels$(OBJ_EXT) avgpool_layer_kernels$(OBJ_EXT)
 endif
 
-EXECOBJ = $(addprefix $(OBJDIR), $(EXECOBJA))
+EXECOBJ = $(addprefix $(EXECOBJDIR), $(EXECOBJA))
 OBJS = $(addprefix $(OBJDIR), $(OBJ))
 DEPS = $(wildcard src/*.h) Makefile include/darknet.h
 
 #all: obj backup results $(SLIB) $(ALIB) $(EXEC)
-all: obj lib $(SLIB) $(ALIB) $(EXEC)
+all: obj execobj lib $(SLIB) $(ALIB) $(EXEC)
 
 
-$(EXEC): $(EXECOBJ) $(ALIB)
+$(EXEC): $(EXECOBJ) $(SLIB)
 ifeq ($(OS),Windows_NT)
-	$(CC) $(COMMON) $(CFLAGS) $^ -Fe$@ -link $(LDFLAGS) $(ALIB)
+	$(CC) $(COMMON) $(CFLAGS) $(EXECOBJ) $(IMPORT_NAME) -Fe$@ -link $(LDFLAGS)
 else
-	$(CC) $(COMMON) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(ALIB)
+	$(CC) $(COMMON) $(CFLAGS) $(EXECOBJ) -o $@ $(LDFLAGS) $(LDFLAGS_EXEC)
 endif
 
 $(ALIB): $(OBJS)
@@ -155,11 +159,18 @@ ifeq ($(OS),Windows_NT)
 	$(CC) $(CFLAGS) $^ -Fe$@ -LD -link $(LDFLAGS) $(LDFLAGS_SHARED)
 else
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(VERSIONFLAGS) -shared
-	@ cd $(BUILD_DIR)/lib; rm -f $(DYNAMIC_SONAME_SHORT); ln -s $(DYNAMIC_VERSIONED_NAME_SHORT) $(DYNAMIC_SONAME_SHORT)
-	@ cd $(BUILD_DIR)/lib; rm -f $(DYNAMIC_NAME_SHORT);   ln -s $(DYNAMIC_SONAME_SHORT) $(DYNAMIC_NAME_SHORT)
+	@ cd $(LIB_BUILD_DIR); rm -f $(DYNAMIC_SONAME_SHORT); ln -s $(DYNAMIC_VERSIONED_NAME_SHORT) $(DYNAMIC_SONAME_SHORT)
+	@ cd $(LIB_BUILD_DIR); rm -f $(DYNAMIC_NAME_SHORT);   ln -s $(DYNAMIC_SONAME_SHORT) $(DYNAMIC_NAME_SHORT)
 endif
 
 $(OBJDIR)%$(OBJ_EXT): %.c $(DEPS)
+ifeq ($(OS),Windows_NT)
+	$(CC) $(COMMON) $(CFLAGS) $(CFLAGS_SHARED) -c $< -Fo$@
+else
+	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@
+endif
+
+$(EXECOBJDIR)%$(OBJ_EXT): %.c $(DEPS)
 ifeq ($(OS),Windows_NT)
 	$(CC) $(COMMON) $(CFLAGS) -c $< -Fo$@
 else
@@ -167,10 +178,12 @@ else
 endif
 
 $(OBJDIR)%$(OBJ_EXT): %.cu $(DEPS)
-	$(NVCC) $(NVCCFLAGS) $(ARCH) $(COMMON) --compiler-options "$(CFLAGS)" -c $< -o $@
+	$(NVCC) $(NVCCFLAGS) $(ARCH) $(COMMON) --compiler-options "$(CFLAGS) $(CFLAGS_SHARED)" -c $< -o $@
 
 obj:
 	mkdir -p $(OBJDIR)
+execobj:
+	mkdir -p $(EXECOBJDIR)
 lib:
 	mkdir -p $(LIB_BUILD_DIR)
 backup:
@@ -186,16 +199,19 @@ install: all
 #install library files
 	install -d $(DESTDIR)$(LIBDIR)
 	install -m 644 $(STATIC_NAME) $(DESTDIR)$(LIBDIR)
-	install -m 644 $(DYNAMIC_NAME) $(DESTDIR)$(LIBDIR)
 ifeq ($(OS),Windows_NT)
 	install -m 644 $(IMPORT_NAME) $(DESTDIR)$(LIBDIR)
 else
+	install -m 644 $(DYNAMIC_NAME) $(DESTDIR)$(LIBDIR)
 	cd $(DESTDIR)$(LIBDIR); rm -f $(DYNAMIC_SONAME_SHORT); ln -s $(DYNAMIC_VERSIONED_NAME_SHORT) $(DYNAMIC_SONAME_SHORT)
 	cd $(DESTDIR)$(LIBDIR); rm -f $(DYNAMIC_NAME_SHORT); ln -s $(DYNAMIC_SONAME_SHORT) $(DYNAMIC_NAME_SHORT)
 endif
 #install executable files
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install -m 755 $(PROJECT) $(DESTDIR)$(PREFIX)/bin
+ifeq ($(OS),Windows_NT)
+	install -m 644 $(DYNAMIC_NAME) $(DESTDIR)$(PREFIX)/bin
+endif
 	install -d $(DESTDIR)$(LABELS_PATH)
 	cp data/labels/* $(DESTDIR)$(LABELS_PATH)
 
@@ -205,15 +221,18 @@ uninstall:
 	rm -rf $(DESTDIR)$(PREFIX)/include/$(PROJECT)
 	# remove libraries
 	rm -f $(DESTDIR)$(LIBDIR)/$(STATIC_NAME_SHORT)
-	rm -f $(DESTDIR)$(LIBDIR)/$(DYNAMIC_NAME_SHORT)
 ifeq ($(OS),Windows_NT)
 	rm -f $(DESTDIR)$(LIBDIR)/$(IMPORT_NAME_SHORT)
 else
+	rm -f $(DESTDIR)$(LIBDIR)/$(DYNAMIC_NAME_SHORT)
 	rm -f $(DESTDIR)$(LIBDIR)/$(DYNAMIC_SONAME_SHORT)
 	rm -f $(DESTDIR)$(LIBDIR)/$(DYNAMIC_VERSIONED_NAME_SHORT)
 endif
 	# remove executable files
 	rm -f $(DESTDIR)$(PREFIX)/bin/$(PROJECT)
+ifeq ($(OS),Windows_NT)
+	rm -f $(DESTDIR)$(PREFIX)/bin/$(DYNAMIC_NAME_SHORT)
+endif
 	rm -rf $(DESTDIR)$(PREFIX)/share/$(PROJECT)
 	# remove empty folders
 	-rmdir $(DESTDIR)$(PREFIX)/include
@@ -225,4 +244,6 @@ endif
 
 clean:
 	rm -rf $(BUILD_DIR) $(EXEC)
-
+ifeq ($(OS),Windows_NT)
+	rm -rf $(PROJECT).lib $(PROJECT).exp
+endif

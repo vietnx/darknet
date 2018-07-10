@@ -1,4 +1,5 @@
-int gpu_index = 0;
+#include "darknet.h"
+DARKNET_API int gpu_index = 0;
 
 #ifdef GPU
 

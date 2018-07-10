@@ -31,7 +31,7 @@
 #endif
 
 #define SECRET_NUM -1234
-extern int gpu_index;
+DARKNET_API extern int gpu_index;
 
 #ifdef GPU
     #define BLOCK 512
@@ -80,7 +80,7 @@ typedef struct{
     int *group_size;
     int *group_offset;
 } tree;
-tree *read_tree(char *filename);
+DARKNET_API tree * CALLBACK read_tree(char *filename);
 
 typedef enum{
     LOGISTIC, RELU, RELIE, LINEAR, RAMP, TANH, PLSE, LEAKY, ELU, LOGGY, STAIR, HARDTAN, LHTAN
@@ -614,9 +614,9 @@ typedef struct{
 
 
 DARKNET_API network * CALLBACK load_network(char *cfg, char *weights, int clear);
-load_args get_base_args(network *net);
+DARKNET_API load_args CALLBACK get_base_args(network *net);
 
-void free_data(data d);
+DARKNET_API void CALLBACK free_data(data d);
 
 typedef struct node{
     void *val;
@@ -630,134 +630,134 @@ typedef struct list{
     node *back;
 } list;
 
-pthread_t load_data(load_args args);
-list *read_data_cfg(char *filename);
+DARKNET_API pthread_t CALLBACK load_data(load_args args);
+DARKNET_API list * CALLBACK read_data_cfg(char *filename);
 list *read_cfg(char *filename);
-unsigned char *read_file(char *filename);
-data resize_data(data orig, int w, int h, int c);
-data *tile_data(data orig, int divs, int size, int c);
-data select_data(data *orig, int *inds);
+DARKNET_API unsigned char * CALLBACK read_file(char *filename);
+DARKNET_API data CALLBACK resize_data(data orig, int w, int h, int c);
+DARKNET_API data * CALLBACK tile_data(data orig, int divs, int size, int c);
+DARKNET_API data CALLBACK select_data(data *orig, int *inds);
 
-void forward_network(network *net);
-void backward_network(network *net);
-void update_network(network *net);
+DARKNET_API void CALLBACK forward_network(network *net);
+DARKNET_API void CALLBACK backward_network(network *net);
+DARKNET_API void CALLBACK update_network(network *net);
 
 
-float dot_cpu(int N, float *X, int INCX, float *Y, int INCY);
+DARKNET_API float CALLBACK dot_cpu(int N, float *X, int INCX, float *Y, int INCY);
 DARKNET_API void CALLBACK axpy_cpu(int N, float ALPHA, float *X, int INCX, float *Y, int INCY);
-void copy_cpu(int N, float *X, int INCX, float *Y, int INCY);
-void scal_cpu(int N, float ALPHA, float *X, int INCX);
+DARKNET_API void CALLBACK copy_cpu(int N, float *X, int INCX, float *Y, int INCY);
+DARKNET_API void CALLBACK scal_cpu(int N, float ALPHA, float *X, int INCX);
 DARKNET_API void CALLBACK fill_cpu(int N, float ALPHA, float * X, int INCX);
-void normalize_cpu(float *x, float *mean, float *variance, int batch, int filters, int spatial);
-void softmax(float *input, int n, float temp, int stride, float *output);
+DARKNET_API void CALLBACK normalize_cpu(float *x, float *mean, float *variance, int batch, int filters, int spatial);
+DARKNET_API void CALLBACK softmax(float *input, int n, float temp, int stride, float *output);
 
 int best_3d_shift_r(image a, image b, int min, int max);
 #ifdef GPU
-void axpy_gpu(int N, float ALPHA, float * X, int INCX, float * Y, int INCY);
-void fill_gpu(int N, float ALPHA, float * X, int INCX);
-void scal_gpu(int N, float ALPHA, float * X, int INCX);
-void copy_gpu(int N, float * X, int INCX, float * Y, int INCY);
+DARKNET_API void CALLBACK axpy_gpu(int N, float ALPHA, float * X, int INCX, float * Y, int INCY);
+DARKNET_API void CALLBACK fill_gpu(int N, float ALPHA, float * X, int INCX);
+DARKNET_API void CALLBACK scal_gpu(int N, float ALPHA, float * X, int INCX);
+DARKNET_API void CALLBACK copy_gpu(int N, float * X, int INCX, float * Y, int INCY);
 
-void cuda_set_device(int n);
-void cuda_free(float *x_gpu);
-float *cuda_make_array(float *x, size_t n);
-void cuda_pull_array(float *x_gpu, float *x, size_t n);
-float cuda_mag_array(float *x_gpu, size_t n);
-void cuda_push_array(float *x_gpu, float *x, size_t n);
+DARKNET_API void CALLBACK cuda_set_device(int n);
+DARKNET_API void CALLBACK cuda_free(float *x_gpu);
+DARKNET_API float * CALLBACK cuda_make_array(float *x, size_t n);
+DARKNET_API void CALLBACK cuda_pull_array(float *x_gpu, float *x, size_t n);
+DARKNET_API float CALLBACK cuda_mag_array(float *x_gpu, size_t n);
+DARKNET_API void CALLBACK cuda_push_array(float *x_gpu, float *x, size_t n);
 
-void forward_network_gpu(network *net);
-void backward_network_gpu(network *net);
-void update_network_gpu(network *net);
+DARKNET_API void CALLBACK forward_network_gpu(network *net);
+DARKNET_API void CALLBACK backward_network_gpu(network *net);
+DARKNET_API void CALLBACK update_network_gpu(network *net);
 
-float train_networks(network **nets, int n, data d, int interval);
-void sync_nets(network **nets, int n, int interval);
-void harmless_update_network_gpu(network *net);
+DARKNET_API float CALLBACK train_networks(network **nets, int n, data d, int interval);
+DARKNET_API void CALLBACK sync_nets(network **nets, int n, int interval);
+DARKNET_API void CALLBACK harmless_update_network_gpu(network *net);
 #endif
 image get_label(image **characters, char *string, int size);
-void save_image_png(image im, const char *name);
-void get_next_batch(data d, int n, int offset, float *X, float *y);
-void grayscale_image_3c(image im);
-void normalize_image(image p);
-void matrix_to_csv(matrix m);
-float train_network_sgd(network *net, data d, int n);
-void rgbgr_image(image im);
-data copy_data(data d);
-data concat_data(data d1, data d2);
-data load_cifar10_data(char *filename);
-float matrix_topk_accuracy(matrix truth, matrix guess, int k);
-void matrix_add_matrix(matrix from, matrix to);
-void scale_matrix(matrix m, float scale);
-matrix csv_to_matrix(char *filename);
-float *network_accuracies(network *net, data d, int n);
-float train_network_datum(network *net);
-image make_random_image(int w, int h, int c);
+DARKNET_API void CALLBACK save_image_png(image im, const char *name);
+DARKNET_API void CALLBACK get_next_batch(data d, int n, int offset, float *X, float *y);
+DARKNET_API void CALLBACK grayscale_image_3c(image im);
+DARKNET_API void CALLBACK normalize_image(image p);
+DARKNET_API void CALLBACK matrix_to_csv(matrix m);
+DARKNET_API float CALLBACK train_network_sgd(network *net, data d, int n);
+DARKNET_API void CALLBACK rgbgr_image(image im);
+DARKNET_API data CALLBACK copy_data(data d);
+DARKNET_API data CALLBACK concat_data(data d1, data d2);
+DARKNET_API data CALLBACK load_cifar10_data(char *filename);
+DARKNET_API float CALLBACK matrix_topk_accuracy(matrix truth, matrix guess, int k);
+DARKNET_API void CALLBACK matrix_add_matrix(matrix from, matrix to);
+DARKNET_API void CALLBACK scale_matrix(matrix m, float scale);
+DARKNET_API matrix CALLBACK csv_to_matrix(char *filename);
+DARKNET_API float * CALLBACK network_accuracies(network *net, data d, int n);
+DARKNET_API float CALLBACK train_network_datum(network *net);
+DARKNET_API image CALLBACK make_random_image(int w, int h, int c);
 
-void denormalize_connected_layer(layer l);
-void denormalize_convolutional_layer(layer l);
-void statistics_connected_layer(layer l);
-void rescale_weights(layer l, float scale, float trans);
-void rgbgr_weights(layer l);
-image *get_weights(layer l);
+DARKNET_API void CALLBACK denormalize_connected_layer(layer l);
+DARKNET_API void CALLBACK denormalize_convolutional_layer(layer l);
+DARKNET_API void CALLBACK statistics_connected_layer(layer l);
+DARKNET_API void CALLBACK rescale_weights(layer l, float scale, float trans);
+DARKNET_API void CALLBACK rgbgr_weights(layer l);
+DARKNET_API image * CALLBACK get_weights(layer l);
 
 void get_detection_detections(layer l, int w, int h, float thresh, detection *dets);
 
-char *option_find_str(list *l, char *key, char *def);
-int option_find_int(list *l, char *key, int def);
-int option_find_int_quiet(list *l, char *key, int def);
+DARKNET_API char * CALLBACK option_find_str(list *l, char *key, char *def);
+DARKNET_API int CALLBACK option_find_int(list *l, char *key, int def);
+DARKNET_API int CALLBACK option_find_int_quiet(list *l, char *key, int def);
 
-network *parse_network_cfg(char *filename);
-void save_weights(network *net, char *filename);
-void load_weights(network *net, char *filename);
-void save_weights_upto(network *net, char *filename, int cutoff);
-void load_weights_upto(network *net, char *filename, int start, int cutoff);
+DARKNET_API network * CALLBACK parse_network_cfg(char *filename);
+DARKNET_API void CALLBACK save_weights(network *net, char *filename);
+DARKNET_API void CALLBACK load_weights(network *net, char *filename);
+DARKNET_API void CALLBACK save_weights_upto(network *net, char *filename, int cutoff);
+DARKNET_API void CALLBACK load_weights_upto(network *net, char *filename, int start, int cutoff);
 
-void zero_objectness(layer l);
+DARKNET_API void CALLBACK zero_objectness(layer l);
 DARKNET_API void CALLBACK get_region_detections(layer l, int w, int h, int netw, int neth, float thresh, int *map, float tree_thresh, int relative, detection *dets);
 DARKNET_API int CALLBACK get_yolo_detections(layer l, int w, int h, int netw, int neth, float thresh, int *map, int relative, detection *dets);
 DARKNET_API void CALLBACK free_network(network *net);
 DARKNET_API void CALLBACK set_batch_network(network *net, int b);
 void set_temp_network(network *net, float t);
-image load_image(char *filename, int w, int h, int c);
-image load_image_color(char *filename, int w, int h);
-image make_image(int w, int h, int c);
-image resize_image(image im, int w, int h);
-void censor_image(image im, int dx, int dy, int w, int h);
+DARKNET_API image CALLBACK load_image(char *filename, int w, int h, int c);
+DARKNET_API image CALLBACK load_image_color(char *filename, int w, int h);
+DARKNET_API image CALLBACK make_image(int w, int h, int c);
+DARKNET_API image CALLBACK resize_image(image im, int w, int h);
+DARKNET_API void CALLBACK censor_image(image im, int dx, int dy, int w, int h);
 DARKNET_API image CALLBACK letterbox_image(image im, int w, int h);
-image crop_image(image im, int dx, int dy, int w, int h);
-image center_crop_image(image im, int w, int h);
-image resize_min(image im, int min);
-image resize_max(image im, int max);
-image threshold_image(image im, float thresh);
-image mask_to_rgb(image mask);
-int resize_network(network *net, int w, int h);
-void free_matrix(matrix m);
-void save_image(image p, const char *name);
-image copy_image(image p);
-float get_current_rate(network *net);
-void composite_3d(char *f1, char *f2, char *out, int delta);
+DARKNET_API image CALLBACK crop_image(image im, int dx, int dy, int w, int h);
+DARKNET_API image CALLBACK center_crop_image(image im, int w, int h);
+DARKNET_API image CALLBACK resize_min(image im, int min);
+DARKNET_API image CALLBACK resize_max(image im, int max);
+DARKNET_API image CALLBACK threshold_image(image im, float thresh);
+DARKNET_API image CALLBACK mask_to_rgb(image mask);
+DARKNET_API int CALLBACK resize_network(network *net, int w, int h);
+DARKNET_API void CALLBACK free_matrix(matrix m);
+DARKNET_API void CALLBACK save_image(image p, const char *name);
+DARKNET_API image CALLBACK copy_image(image p);
+DARKNET_API float CALLBACK get_current_rate(network *net);
+DARKNET_API void CALLBACK composite_3d(char *f1, char *f2, char *out, int delta);
 data load_data_old(char **paths, int n, int m, char **labels, int k, int w, int h, int c);
-size_t get_current_batch(network *net);
-void constrain_image(image im);
-image get_network_image_layer(network *net, int i);
-layer get_network_output_layer(network *net);
-void top_predictions(network *net, int n, int *index);
-void flip_image(image a);
-image float_to_image(int w, int h, int c, float *data);
-void ghost_image(image source, image dest, int dx, int dy);
+DARKNET_API size_t CALLBACK get_current_batch(network *net);
+DARKNET_API void CALLBACK constrain_image(image im);
+DARKNET_API image CALLBACK get_network_image_layer(network *net, int i);
+DARKNET_API layer CALLBACK get_network_output_layer(network *net);
+DARKNET_API void CALLBACK top_predictions(network *net, int n, int *index);
+DARKNET_API void CALLBACK flip_image(image a);
+DARKNET_API image CALLBACK float_to_image(int w, int h, int c, float *data);
+DARKNET_API void CALLBACK ghost_image(image source, image dest, int dx, int dy);
 float network_accuracy(network *net, data d);
-void random_distort_image(image im, float hue, float saturation, float exposure);
-void fill_image(image m, float s);
-image grayscale_image(image im);
-void rotate_image_cw(image im, int times);
-double what_time_is_it_now();
-image rotate_image(image m, float rad);
-float box_iou(box a, box b);
-data load_all_cifar10();
-box_label *read_boxes(char *filename, int *n);
+DARKNET_API void CALLBACK random_distort_image(image im, float hue, float saturation, float exposure);
+DARKNET_API void CALLBACK fill_image(image m, float s);
+DARKNET_API image CALLBACK grayscale_image(image im);
+DARKNET_API void CALLBACK rotate_image_cw(image im, int times);
+DARKNET_API double CALLBACK what_time_is_it_now();
+DARKNET_API image CALLBACK rotate_image(image m, float rad);
+DARKNET_API float CALLBACK box_iou(box a, box b);
+DARKNET_API data CALLBACK load_all_cifar10();
+DARKNET_API box_label * CALLBACK read_boxes(char *filename, int *n);
 box float_to_box(float *f, int stride);
 
-matrix network_predict_data(network *net, data test);
-image get_network_image(network *net);
+DARKNET_API matrix CALLBACK network_predict_data(network *net, data test);
+DARKNET_API image CALLBACK get_network_image(network *net);
 DARKNET_API float* CALLBACK network_predict(network *net, float *input);
 
 int network_width(network *net);
@@ -767,52 +767,52 @@ void network_detect(network *net, image im, float thresh, float hier_thresh, flo
 DARKNET_API detection* CALLBACK get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num);
 DARKNET_API void CALLBACK free_detections(detection *dets, int n);
 
-void reset_network_state(network *net, int b);
+DARKNET_API void CALLBACK reset_network_state(network *net, int b);
 
-char **get_labels(char *filename);
+DARKNET_API char ** CALLBACK get_labels(char *filename);
 DARKNET_API void CALLBACK do_nms_obj(detection *dets, int total, int classes, float thresh);
 DARKNET_API void CALLBACK do_nms_sort(detection *dets, int total, int classes, float thresh);
 
-matrix make_matrix(int rows, int cols);
+DARKNET_API matrix CALLBACK make_matrix(int rows, int cols);
 
 DARKNET_API void CALLBACK free_image(image m);
-float train_network(network *net, data d);
-pthread_t load_data_in_thread(load_args args);
+DARKNET_API float CALLBACK train_network(network *net, data d);
+DARKNET_API pthread_t CALLBACK load_data_in_thread(load_args args);
 void load_data_blocking(load_args args);
-list *get_paths(char *filename);
-void hierarchy_predictions(float *predictions, int n, tree *hier, int only_leaves, int stride);
-void change_leaves(tree *t, char *leaf_list);
+DARKNET_API list * CALLBACK get_paths(char *filename);
+DARKNET_API void CALLBACK hierarchy_predictions(float *predictions, int n, tree *hier, int only_leaves, int stride);
+DARKNET_API void CALLBACK change_leaves(tree *t, char *leaf_list);
 
-int find_int_arg(int argc, char **argv, char *arg, int def);
-float find_float_arg(int argc, char **argv, char *arg, float def);
-int find_arg(int argc, char* argv[], char *arg);
-char *find_char_arg(int argc, char **argv, char *arg, char *def);
-char *basecfg(char *cfgfile);
-void find_replace(char *str, char *orig, char *rep, char *output);
+DARKNET_API int CALLBACK find_int_arg(int argc, char **argv, char *arg, int def);
+DARKNET_API float CALLBACK find_float_arg(int argc, char **argv, char *arg, float def);
+DARKNET_API int CALLBACK find_arg(int argc, char* argv[], char *arg);
+DARKNET_API char * CALLBACK find_char_arg(int argc, char **argv, char *arg, char *def);
+DARKNET_API char * CALLBACK basecfg(char *cfgfile);
+DARKNET_API void CALLBACK find_replace(char *str, char *orig, char *rep, char *output);
 DARKNET_API void CALLBACK free_ptrs(void **ptrs, int n);
-char *fgetl(FILE *fp);
-void strip(char *s);
-float sec(clock_t clocks);
-void **list_to_array(list *l);
-void top_k(float *a, int n, int k, int *index);
-int *read_map(char *filename);
-void error(const char *s);
-int max_index(float *a, int n);
-int max_int_index(int *a, int n);
-int sample_array(float *a, int n);
-int *random_index_order(int min, int max);
-void free_list(list *l);
+DARKNET_API char * CALLBACK fgetl(FILE *fp);
+DARKNET_API void CALLBACK strip(char *s);
+DARKNET_API float CALLBACK sec(clock_t clocks);
+DARKNET_API void ** CALLBACK list_to_array(list *l);
+DARKNET_API void CALLBACK top_k(float *a, int n, int k, int *index);
+DARKNET_API int * CALLBACK read_map(char *filename);
+DARKNET_API void CALLBACK error(const char *s);
+DARKNET_API int CALLBACK max_index(float *a, int n);
+DARKNET_API int CALLBACK max_int_index(int *a, int n);
+DARKNET_API int CALLBACK sample_array(float *a, int n);
+DARKNET_API int * CALLBACK random_index_order(int min, int max);
+DARKNET_API void CALLBACK free_list(list *l);
 float mse_array(float *a, int n);
-float variance_array(float *a, int n);
-float mag_array(float *a, int n);
-void scale_array(float *a, int n, float s);
-float mean_array(float *a, int n);
-float sum_array(float *a, int n);
-void normalize_array(float *a, int n);
-int *read_intlist(char *s, int *n, int d);
-size_t rand_size_t();
-float rand_normal();
-float rand_uniform(float min, float max);
+DARKNET_API float CALLBACK variance_array(float *a, int n);
+DARKNET_API float CALLBACK mag_array(float *a, int n);
+DARKNET_API void CALLBACK scale_array(float *a, int n, float s);
+DARKNET_API float CALLBACK mean_array(float *a, int n);
+DARKNET_API float CALLBACK sum_array(float *a, int n);
+DARKNET_API void CALLBACK normalize_array(float *a, int n);
+DARKNET_API int * CALLBACK read_intlist(char *s, int *n, int d);
+DARKNET_API size_t CALLBACK rand_size_t();
+DARKNET_API float CALLBACK rand_normal();
+DARKNET_API float CALLBACK rand_uniform(float min, float max);
 
 #ifdef __cplusplus
 }

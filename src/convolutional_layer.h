@@ -1,6 +1,7 @@
 #ifndef CONVOLUTIONAL_LAYER_H
 #define CONVOLUTIONAL_LAYER_H
 
+#include "darknet.h"
 #include "cuda.h"
 #include "image.h"
 #include "activations.h"
@@ -38,7 +39,7 @@ void backward_convolutional_layer(convolutional_layer layer, network net);
 void add_bias(float *output, float *biases, int batch, int n, int size);
 void backward_bias(float *bias_updates, float *delta, int batch, int n, int size);
 
-image get_convolutional_image(convolutional_layer layer);
+DARKNET_API image CALLBACK get_convolutional_image(convolutional_layer layer);
 image get_convolutional_delta(convolutional_layer layer);
 image get_convolutional_weight(convolutional_layer layer, int i);
 

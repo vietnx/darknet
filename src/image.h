@@ -11,30 +11,30 @@
 
 #ifndef __cplusplus
 #ifdef OPENCV
-image ipl_to_image(IplImage* src);
-void ipl_into_image(IplImage* src, image im);
+DARKNET_API image CALLBACK ipl_to_image(IplImage* src);
+DARKNET_API void CALLBACK ipl_into_image(IplImage* src, image im);
 #endif
 #endif
 
-float get_pixel(image m, int x, int y, int c);
-float get_pixel_extend(image m, int x, int y, int c);
-void set_pixel(image m, int x, int y, int c, float val);
-float get_color(int c, int x, int max);
+DARKNET_API float CALLBACK get_pixel(image m, int x, int y, int c);
+DARKNET_API float CALLBACK get_pixel_extend(image m, int x, int y, int c);
+DARKNET_API void CALLBACK set_pixel(image m, int x, int y, int c, float val);
+DARKNET_API float CALLBACK get_color(int c, int x, int max);
 void write_label(image a, int r, int c, image *characters, char *string, float *rgb);
 image image_distance(image a, image b);
 void scale_image(image m, float s);
 image rotate_crop_image(image im, float rad, float s, int w, int h, float dx, float dy, float aspect);
 image random_crop_image(image im, int w, int h);
-image random_augment_image(image im, float angle, float aspect, int low, int high, int w, int h);
+DARKNET_API image CALLBACK random_augment_image(image im, float angle, float aspect, int low, int high, int w, int h);
 augment_args random_augment_args(image im, float angle, float aspect, int low, int high, int w, int h);
-void letterbox_image_into(image im, int w, int h, image boxed);
-image resize_max(image im, int max);
+DARKNET_API void CALLBACK letterbox_image_into(image im, int w, int h, image boxed);
+DARKNET_API image CALLBACK resize_max(image im, int max);
 void translate_image(image m, float s);
-void embed_image(image source, image dest, int dx, int dy);
+DARKNET_API void CALLBACK embed_image(image source, image dest, int dx, int dy);
 void place_image(image im, int w, int h, int dx, int dy, image canvas);
 void saturate_image(image im, float sat);
 void exposure_image(image im, float sat);
-void distort_image(image im, float hue, float sat, float val);
+DARKNET_API void CALLBACK distort_image(image im, float hue, float sat, float val);
 void saturate_exposure_image(image im, float sat, float exposure);
 void rgb_to_hsv(image im);
 void hsv_to_rgb(image im);
@@ -42,16 +42,16 @@ void yuv_to_rgb(image im);
 void rgb_to_yuv(image im);
 
 
-image collapse_image_layers(image source, int border);
+DARKNET_API image CALLBACK collapse_image_layers(image source, int border);
 image collapse_images_horz(image *ims, int n);
-image collapse_images_vert(image *ims, int n);
+DARKNET_API image CALLBACK collapse_images_vert(image *ims, int n);
 
 void print_image(image m);
 
-image make_empty_image(int w, int h, int c);
+DARKNET_API image CALLBACK make_empty_image(int w, int h, int c);
 void copy_image_into(image src, image dest);
 
-image get_image_layer(image m, int l);
+DARKNET_API image CALLBACK get_image_layer(image m, int l);
 
 #endif
 

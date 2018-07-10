@@ -36,8 +36,6 @@ static int demo_done = 0;
 static int demo_total = 0;
 double demo_time;
 
-detection *get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num);
-
 int size_network(network *net)
 {
     int i;
