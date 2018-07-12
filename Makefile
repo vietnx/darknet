@@ -239,6 +239,7 @@ endif
 	-rmdir $(DESTDIR)$(LIBDIR)
 	-rmdir $(DESTDIR)$(PREFIX)/bin
 	-rmdir $(DESTDIR)$(PREFIX)/share
+	-rmdir $(DESTDIR)$(PREFIX)
 
 .PHONY: clean
 
