@@ -71,7 +71,7 @@ CFLAGS = -Wall -Wno-unused-result -Wno-unknown-pragmas -Wfatal-errors -fPIC
 LDFLAGS += -lm -pthread
 OPTS = -Ofast
 OBJ_EXT = .o
-LDFLAGS_EXEC = -L$(LIB_BUILD_DIR) -l$(DYNAMIC_NAME_SHORT)
+LDFLAGS_EXEC = -L$(LIB_BUILD_DIR) -l$(LIBRARY_NAME)
 LDFLAGS_EXEC += -Wl,-rpath,$(LIB_BUILD_DIR)
 endif
 AR=ar
