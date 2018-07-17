@@ -763,6 +763,7 @@ void forward_network_gpu(network *netp)
             fill_gpu(l.outputs * l.batch, 0, l.delta_gpu, 1);
         }
         l.forward_gpu(l, net);
+        cudaStreamSynchronize(get_cuda_stream());
         net.input_gpu = l.output_gpu;
         net.input = l.output;
         if(l.truth) {
