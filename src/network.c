@@ -297,7 +297,7 @@ float train_network_datum(network *net)
 {
     *net->seen += net->batch;
     net->train = 1;
-#if defined(GPU) && defined(CUDNN_HALF)
+#if defined(GPU) && defined(CUDNN) && defined(CUDNN_HALF)
 	for (int i = 0; i < net->n; ++i) {
 		layer l = net->layers[i];
 		cuda_convert_f32_to_f16(l.weights_gpu, l.nweights, l.weights_gpu16);
@@ -305,7 +305,7 @@ float train_network_datum(network *net)
 #endif
     forward_network(net);
 #ifdef GPU
-    cudaStreamSynchronize(get_cuda_stream());
+    //cudaStreamSynchronize(get_cuda_stream());
 #endif
     backward_network(net);
     float error = *net->cost;

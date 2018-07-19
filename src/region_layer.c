@@ -473,12 +473,12 @@ void forward_region_layer_gpu(const layer l, network net)
     }
 
     cuda_pull_array(l.output_gpu, net.input, l.batch*l.inputs);
-    cudaStreamSynchronize(get_cuda_stream());
+    //cudaStreamSynchronize(get_cuda_stream());
     forward_region_layer(l, net);
     //cuda_push_array(l.output_gpu, l.output, l.batch*l.outputs);
     if(!net.train) return;
     cuda_push_array(l.delta_gpu, l.delta, l.batch*l.outputs);
-    cudaStreamSynchronize(get_cuda_stream());
+    //cudaStreamSynchronize(get_cuda_stream());
 }
 
 void backward_region_layer_gpu(const layer l, network net)
