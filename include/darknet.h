@@ -115,6 +115,7 @@ typedef enum {
     XNOR,
     REGION,
     YOLO,
+    ISEG,
     REORG,
     UPSAMPLE,
     LOGXENT,
@@ -195,6 +196,7 @@ struct layer{
     float ratio;
     float learning_rate_scale;
     float clip;
+    int noloss;
     int softmax;
     int classes;
     int coords;
@@ -232,6 +234,7 @@ struct layer{
     int dontload;
     int dontsave;
     int dontloadscales;
+    int numload;
 
     float temperature;
     float probability;
@@ -242,6 +245,8 @@ struct layer{
     int   * input_layers;
     int   * input_sizes;
     int   * map;
+    int   * counts;
+    float ** sums;
     float * rand;
     float * cost;
     float * state;
@@ -584,7 +589,7 @@ typedef struct{
 } data;
 
 typedef enum {
-    CLASSIFICATION_DATA, DETECTION_DATA, CAPTCHA_DATA, REGION_DATA, IMAGE_DATA, COMPARE_DATA, WRITING_DATA, SWAG_DATA, TAG_DATA, OLD_CLASSIFICATION_DATA, STUDY_DATA, DET_DATA, SUPER_DATA, LETTERBOX_DATA, REGRESSION_DATA, SEGMENTATION_DATA, INSTANCE_DATA
+    CLASSIFICATION_DATA, DETECTION_DATA, CAPTCHA_DATA, REGION_DATA, IMAGE_DATA, COMPARE_DATA, WRITING_DATA, SWAG_DATA, TAG_DATA, OLD_CLASSIFICATION_DATA, STUDY_DATA, DET_DATA, SUPER_DATA, LETTERBOX_DATA, REGRESSION_DATA, SEGMENTATION_DATA, INSTANCE_DATA, ISEG_DATA
 } data_type;
 
 typedef struct load_args{

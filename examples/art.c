@@ -31,7 +31,6 @@ void demo_art(char *cfgfile, char *weightfile, int cam_index)
         else{
             in_s = resize_image(in, net->w, net->h);
         }
-        show_image(in, window);
 
         float *p = network_predict(net, in_s.data);
 
@@ -46,16 +45,15 @@ void demo_art(char *cfgfile, char *weightfile, int cam_index)
         score = score;
         printf("I APPRECIATE THIS ARTWORK: %10.7f%%\n", score*100);
         printf("[");
-	int upper = 30;
+        int upper = 30;
         for(i = 0; i < upper; ++i){
             printf("%c", ((i+.5) < score*upper) ? 219 : ' ');
         }
         printf("]\n");
 
+        show_image(in, window, 1);
         free_image(in_s);
         free_image(in);
-
-        cvWaitKey(1);
     }
 #endif
 }
