@@ -138,7 +138,7 @@ char *get_layer_string(LAYER_TYPE a)
         case GRU:
             return "gru";
         case LSTM:
-	    return "lstm";
+        return "lstm";
         case CRNN:
             return "crnn";
         case MAXPOOL:
@@ -298,10 +298,10 @@ float train_network_datum(network *net)
     *net->seen += net->batch;
     net->train = 1;
 #if defined(GPU) && defined(CUDNN) && defined(CUDNN_HALF)
-	for (int i = 0; i < net->n; ++i) {
-		layer l = net->layers[i];
-		cuda_convert_f32_to_f16(l.weights_gpu, l.nweights, l.weights_gpu16);
-	}
+    for (int i = 0; i < net->n; ++i) {
+        layer l = net->layers[i];
+        cuda_convert_f32_to_f16(l.weights_gpu, l.nweights, l.weights_gpu16);
+    }
 #endif
     forward_network(net);
 #ifdef GPU
@@ -360,20 +360,20 @@ void set_batch_network(network *net, int b)
         net->layers[i].batch = b;
 #ifdef CUDNN
         if(net->layers[i].type == CONVOLUTIONAL){
-			cudnn_convolutional_setup(net->layers + i, cudnn_fastest);
-			/*
-			layer *l = net->layers + i;
+            cudnn_convolutional_setup(net->layers + i, cudnn_fastest);
+            /*
+            layer *l = net->layers + i;
             cudnn_convolutional_setup(l, cudnn_fastest);
-			// check for excessive memory consumption 
-			size_t free_byte;
-			size_t total_byte;
-			check_error(cudaMemGetInfo(&free_byte, &total_byte));
-			if (l->workspace_size > free_byte || l->workspace_size >= total_byte / 2) {
-				printf(" used slow CUDNN algo without Workspace! \n");
-				cudnn_convolutional_setup(l, cudnn_smallest);
-				l->workspace_size = get_workspace_size(*l);
-			}
-			*/
+            // check for excessive memory consumption 
+            size_t free_byte;
+            size_t total_byte;
+            check_error(cudaMemGetInfo(&free_byte, &total_byte));
+            if (l->workspace_size > free_byte || l->workspace_size >= total_byte / 2) {
+                printf(" used slow CUDNN algo without Workspace! \n");
+                cudnn_convolutional_setup(l, cudnn_smallest);
+                l->workspace_size = get_workspace_size(*l);
+            }
+            */
         }
         if(net->layers[i].type == DECONVOLUTIONAL){
             layer *l = net->layers + i;
@@ -400,7 +400,7 @@ int resize_network(network *net, int w, int h)
     //fflush(stderr);
     for (i = 0; i < net->n; ++i){
         layer l = net->layers[i];
-		//printf(" %d: layer = %d,", i, l.type);
+        //printf(" %d: layer = %d,", i, l.type);
         if(l.type == CONVOLUTIONAL){
             resize_convolutional_layer(&l, w, h);
         }else if(l.type == CROP){
@@ -453,10 +453,10 @@ int resize_network(network *net, int w, int h)
         net->input_gpu = cuda_make_array(net->input, net->inputs*net->batch);
         net->truth_gpu = cuda_make_array(net->truth, net->truths*net->batch);
         if(workspace_size){
-  		    printf(" try to allocate workspace = %zu * sizeof(float), ", (workspace_size - 1) / sizeof(float) + 1);
+              printf(" try to allocate workspace = %zu * sizeof(float), ", (workspace_size - 1) / sizeof(float) + 1);
             net->workspace = cuda_make_array(0, (workspace_size-1)/sizeof(float)+1);
         }
-		printf(" CUDA allocate done! \n");
+        printf(" CUDA allocate done! \n");
     }else {
         free(net->workspace);
         net->workspace = calloc(1, workspace_size);
@@ -1155,36 +1155,36 @@ void pull_network_output(network *net)
 
 void fuse_conv_batchnorm(network* net)
 {
-	for (int j = 0; j < net->n; ++j) {
-		layer *l = &net->layers[j];
+    for (int j = 0; j < net->n; ++j) {
+        layer *l = &net->layers[j];
 
-		if (l->type == CONVOLUTIONAL) {
-			printf(" Fuse Convolutional layer \t\t l->size = %d  \n", l->size);
+        if (l->type == CONVOLUTIONAL) {
+            printf(" Fuse Convolutional layer \t\t l->size = %d  \n", l->size);
 
-			if (l->batch_normalize) {
-				for (int f = 0; f < l->n; ++f)
-				{
-					l->biases[f] = l->biases[f] - l->scales[f] * l->rolling_mean[f] / (sqrtf(l->rolling_variance[f]) + .000001f);
+            if (l->batch_normalize) {
+                for (int f = 0; f < l->n; ++f)
+                {
+                    l->biases[f] = l->biases[f] - l->scales[f] * l->rolling_mean[f] / (sqrtf(l->rolling_variance[f]) + .000001f);
 
-					const size_t filter_size = l->size*l->size*l->c;
-					int i;
-					for (i = 0; i < filter_size; ++i) {
-						int w_index = f*filter_size + i;
+                    const size_t filter_size = l->size*l->size*l->c;
+                    int i;
+                    for (i = 0; i < filter_size; ++i) {
+                        int w_index = f*filter_size + i;
 
-						l->weights[w_index] = l->weights[w_index] * l->scales[f] / (sqrtf(l->rolling_variance[f]) + .000001f);
-					}
-				}
+                        l->weights[w_index] = l->weights[w_index] * l->scales[f] / (sqrtf(l->rolling_variance[f]) + .000001f);
+                    }
+                }
 
-				l->batch_normalize = 0;
+                l->batch_normalize = 0;
 #ifdef GPU
-				if (gpu_index >= 0) {
-					push_convolutional_layer(*l);
-				}
+                if (gpu_index >= 0) {
+                    push_convolutional_layer(*l);
+                }
 #endif
-			}
-		}
-		else {
-			printf(" Skip layer: %d \n", l->type);
-		}
-	}
+            }
+        }
+        else {
+            printf(" Skip layer: %d \n", l->type);
+        }
+    }
 }

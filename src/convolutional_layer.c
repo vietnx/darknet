@@ -123,29 +123,29 @@ size_t get_workspace_size(layer l){
 void cudnn_convolutional_setup(layer *l, int cudnn_preference)
 {
 #ifdef CUDNN_HALF
-	// TRUE_HALF_CONFIG is only supported on architectures with true fp16 support (compute capability 5.3 and 6.0): 
-	//   Tegra X1, Jetson TX1, DRIVE CX, DRIVE PX, Quadro GP100, Tesla P100
-	// PSEUDO_HALF_CONFIG is required for Tensor Cores - our case!
-	const cudnnDataType_t data_type = CUDNN_DATA_HALF;
+    // TRUE_HALF_CONFIG is only supported on architectures with true fp16 support (compute capability 5.3 and 6.0): 
+    //   Tegra X1, Jetson TX1, DRIVE CX, DRIVE PX, Quadro GP100, Tesla P100
+    // PSEUDO_HALF_CONFIG is required for Tensor Cores - our case!
+    const cudnnDataType_t data_type = CUDNN_DATA_HALF;
 #else
-	cudnnDataType_t data_type = CUDNN_DATA_FLOAT;
+    cudnnDataType_t data_type = CUDNN_DATA_FLOAT;
 #endif
 
 #if(CUDNN_MAJOR >= 7)
-	// Tensor Core uses CUDNN_TENSOR_OP_MATH instead of CUDNN_DEFAULT_MATH
-	// For *_ALGO_WINOGRAD_NONFUSED can be used CUDNN_DATA_FLOAT
-	// otherwise Input, Filter and Output descriptors (xDesc, yDesc, wDesc, dxDesc, dyDesc and dwDesc as applicable) have dataType = CUDNN_DATA_HALF
-	// Three techniques for training using Mixed-precision: https://devblogs.nvidia.com/mixed-precision-training-deep-neural-networks/
-	// 1. Accumulation into FP32
-	// 2. Loss Scaling - required only for: activation gradients. We do not use.
-	// 3. FP32 Master Copy of Weights
-	// More: http://docs.nvidia.com/deeplearning/sdk/cudnn-developer-guide/index.html#tensor_ops
-	cudnnSetConvolutionMathType(l->convDesc, CUDNN_TENSOR_OP_MATH);
+    // Tensor Core uses CUDNN_TENSOR_OP_MATH instead of CUDNN_DEFAULT_MATH
+    // For *_ALGO_WINOGRAD_NONFUSED can be used CUDNN_DATA_FLOAT
+    // otherwise Input, Filter and Output descriptors (xDesc, yDesc, wDesc, dxDesc, dyDesc and dwDesc as applicable) have dataType = CUDNN_DATA_HALF
+    // Three techniques for training using Mixed-precision: https://devblogs.nvidia.com/mixed-precision-training-deep-neural-networks/
+    // 1. Accumulation into FP32
+    // 2. Loss Scaling - required only for: activation gradients. We do not use.
+    // 3. FP32 Master Copy of Weights
+    // More: http://docs.nvidia.com/deeplearning/sdk/cudnn-developer-guide/index.html#tensor_ops
+    cudnnSetConvolutionMathType(l->convDesc, CUDNN_TENSOR_OP_MATH);
 #endif
 
-	// INT8_CONFIG, INT8_EXT_CONFIG, INT8x4_CONFIG and INT8x4_EXT_CONFIG are only supported 
-	//   on architectures with DP4A support (compute capability 6.1 and later).
-	//cudnnDataType_t data_type = CUDNN_DATA_INT8;
+    // INT8_CONFIG, INT8_EXT_CONFIG, INT8x4_CONFIG and INT8x4_EXT_CONFIG are only supported 
+    //   on architectures with DP4A support (compute capability 6.1 and later).
+    //cudnnDataType_t data_type = CUDNN_DATA_INT8;
     
     // backward delta
     cudnnSetTensor4dDescriptor(l->dsrcTensorDesc, CUDNN_TENSOR_NCHW, data_type, l->batch, l->c, l->h, l->w); 
@@ -176,23 +176,23 @@ void cudnn_convolutional_setup(layer *l, int cudnn_preference)
     }
 #endif
 
-	int forward_algo = CUDNN_CONVOLUTION_FWD_PREFER_FASTEST;
-	int backward_algo = CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST;
-	int backward_filter = CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST;
-	if (cudnn_preference == cudnn_smallest) 
-	{
-		forward_algo = CUDNN_CONVOLUTION_FWD_NO_WORKSPACE;
-		backward_algo = CUDNN_CONVOLUTION_BWD_DATA_NO_WORKSPACE;
-		backward_filter = CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE;
-		printf(" CUDNN-slow ");
-	}
+    int forward_algo = CUDNN_CONVOLUTION_FWD_PREFER_FASTEST;
+    int backward_algo = CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST;
+    int backward_filter = CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST;
+    if (cudnn_preference == cudnn_smallest) 
+    {
+        forward_algo = CUDNN_CONVOLUTION_FWD_NO_WORKSPACE;
+        backward_algo = CUDNN_CONVOLUTION_BWD_DATA_NO_WORKSPACE;
+        backward_filter = CUDNN_CONVOLUTION_BWD_FILTER_NO_WORKSPACE;
+        printf(" CUDNN-slow ");
+    }
 
-	cudnnGetConvolutionForwardAlgorithm(cudnn_handle(),
+    cudnnGetConvolutionForwardAlgorithm(cudnn_handle(),
             l->srcTensorDesc,
             l->weightDesc,
             l->convDesc,
             l->dstTensorDesc,
-			forward_algo,
+            forward_algo,
             0,
             &l->fw_algo);
     cudnnGetConvolutionBackwardDataAlgorithm(cudnn_handle(),
@@ -200,7 +200,7 @@ void cudnn_convolutional_setup(layer *l, int cudnn_preference)
             l->ddstTensorDesc,
             l->convDesc,
             l->dsrcTensorDesc,
-			backward_algo,
+            backward_algo,
             0,
             &l->bd_algo);
     cudnnGetConvolutionBackwardFilterAlgorithm(cudnn_handle(),
@@ -208,41 +208,41 @@ void cudnn_convolutional_setup(layer *l, int cudnn_preference)
             l->ddstTensorDesc,
             l->convDesc,
             l->dweightDesc,
-			backward_filter,
+            backward_filter,
             0,
             &l->bf_algo);
 
-	if (data_type == CUDNN_DATA_HALF) 
-	{
-		// HALF-16 if(data_type == CUDNN_DATA_HALF)
-		l->fw_algo = CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM;
-		l->bd_algo = CUDNN_CONVOLUTION_BWD_DATA_ALGO_1;
-		l->bf_algo = CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1;
+    if (data_type == CUDNN_DATA_HALF) 
+    {
+        // HALF-16 if(data_type == CUDNN_DATA_HALF)
+        l->fw_algo = CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM;
+        l->bd_algo = CUDNN_CONVOLUTION_BWD_DATA_ALGO_1;
+        l->bf_algo = CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1;
 
-		// FLOAT-32 if(data_type == CUDNN_DATA_FLOAT)
-		//l->fw_algo = CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED;
-		//l->bd_algo = CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED;
-		//l->bf_algo = CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED;
+        // FLOAT-32 if(data_type == CUDNN_DATA_FLOAT)
+        //l->fw_algo = CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED;
+        //l->bd_algo = CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED;
+        //l->bf_algo = CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED;
 
-		int fw = 0, bd = 0, bf = 0;
-		if (l->fw_algo == CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM) fw = 1;
-			//printf("Tensor Cores - Forward enabled: l->fw_algo = CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM \n");
-		if (l->fw_algo == CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED) fw = 2;
-			//printf("Tensor Cores - Forward enabled: l->fw_algo = CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED \n");
+        int fw = 0, bd = 0, bf = 0;
+        if (l->fw_algo == CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM) fw = 1;
+            //printf("Tensor Cores - Forward enabled: l->fw_algo = CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM \n");
+        if (l->fw_algo == CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED) fw = 2;
+            //printf("Tensor Cores - Forward enabled: l->fw_algo = CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED \n");
 
-		if (l->bd_algo == CUDNN_CONVOLUTION_BWD_DATA_ALGO_1) bd = 1;
-			//printf("Tensor Cores - Backward-data enabled: l->bd_algo = CUDNN_CONVOLUTION_BWD_DATA_ALGO_1  \n");
-		if (l->bd_algo == CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED) bd = 2;
-			//printf("Tensor Cores - Backward-data enabled: l->bd_algo = CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED \n");
+        if (l->bd_algo == CUDNN_CONVOLUTION_BWD_DATA_ALGO_1) bd = 1;
+            //printf("Tensor Cores - Backward-data enabled: l->bd_algo = CUDNN_CONVOLUTION_BWD_DATA_ALGO_1  \n");
+        if (l->bd_algo == CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED) bd = 2;
+            //printf("Tensor Cores - Backward-data enabled: l->bd_algo = CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED \n");
 
-		if (l->bf_algo == CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1) bf = 1;
-			//printf("Tensor Cores - Backward-filter enabled: l->bf_algo = CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1   \n");
-		if (l->bf_algo == CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED) bf = 2;
-			//printf("Tensor Cores - Backward-filter enabled: l->bf_algo = CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED \n");
+        if (l->bf_algo == CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1) bf = 1;
+            //printf("Tensor Cores - Backward-filter enabled: l->bf_algo = CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1   \n");
+        if (l->bf_algo == CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED) bf = 2;
+            //printf("Tensor Cores - Backward-filter enabled: l->bf_algo = CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED \n");
 
-		if (fw == 2 && bd == 2 && bf == 2) printf("TF ");
-		else if (fw >= 1 && bd >= 1 && bf >= 1) printf("TH ");
-	}
+        if (fw == 2 && bd == 2 && bf == 2) printf("TF ");
+        else if (fw >= 1 && bd >= 1 && bf >= 1) printf("TH ");
+    }
 }
 #endif
 #endif
@@ -449,8 +449,8 @@ void test_convolutional_layer()
 
 void resize_convolutional_layer(convolutional_layer *l, int w, int h)
 {
-	int old_w = l->w;
-	int old_h = l->h;
+    int old_w = l->w;
+    int old_h = l->h;
     l->w = w;
     l->h = h;
     int out_w = convolutional_out_width(*l);
@@ -470,21 +470,21 @@ void resize_convolutional_layer(convolutional_layer *l, int w, int h)
     }
 
 #ifdef GPU
-	if (old_w < w || old_h < h) {
-		cuda_free(l->delta_gpu);
-		cuda_free(l->output_gpu);
+    if (old_w < w || old_h < h) {
+        cuda_free(l->delta_gpu);
+        cuda_free(l->output_gpu);
 
-		l->delta_gpu = cuda_make_array(l->delta, l->batch*l->outputs);
-		l->output_gpu = cuda_make_array(l->output, l->batch*l->outputs);
+        l->delta_gpu = cuda_make_array(l->delta, l->batch*l->outputs);
+        l->output_gpu = cuda_make_array(l->output, l->batch*l->outputs);
 
-		if (l->batch_normalize) {
-			cuda_free(l->x_gpu);
-			cuda_free(l->x_norm_gpu);
+        if (l->batch_normalize) {
+            cuda_free(l->x_gpu);
+            cuda_free(l->x_norm_gpu);
 
-			l->x_gpu = cuda_make_array(l->output, l->batch*l->outputs);
-			l->x_norm_gpu = cuda_make_array(l->output, l->batch*l->outputs);
-		}
-	}
+            l->x_gpu = cuda_make_array(l->output, l->batch*l->outputs);
+            l->x_norm_gpu = cuda_make_array(l->output, l->batch*l->outputs);
+        }
+    }
 #ifdef CUDNN
     cudnn_convolutional_setup(l, cudnn_fastest);
 #endif
@@ -492,15 +492,15 @@ void resize_convolutional_layer(convolutional_layer *l, int w, int h)
     l->workspace_size = get_workspace_size(*l);
 
 #ifdef CUDNN
-	// check for excessive memory consumption 
-	size_t free_byte;
-	size_t total_byte;
-	check_error(cudaMemGetInfo(&free_byte, &total_byte));
-	if (l->workspace_size > free_byte || l->workspace_size >= total_byte / 2) {
-		printf(" used slow CUDNN algo without Workspace! \n");
-		cudnn_convolutional_setup(l, cudnn_smallest);
-		l->workspace_size = get_workspace_size(*l);
-	}
+    // check for excessive memory consumption 
+    size_t free_byte;
+    size_t total_byte;
+    check_error(cudaMemGetInfo(&free_byte, &total_byte));
+    if (l->workspace_size > free_byte || l->workspace_size >= total_byte / 2) {
+        printf(" used slow CUDNN algo without Workspace! \n");
+        cudnn_convolutional_setup(l, cudnn_smallest);
+        l->workspace_size = get_workspace_size(*l);
+    }
 #endif
 }
 

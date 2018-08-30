@@ -343,7 +343,7 @@ layer parse_region(list *options, size_params params)
     int coords = option_find_int(options, "coords", 4);
     int classes = option_find_int(options, "classes", 20);
     int num = option_find_int(options, "num", 1);
-	int max_boxes = option_find_int_quiet(options, "max", 30);
+    int max_boxes = option_find_int_quiet(options, "max", 30);
 
     layer l = make_region_layer(params.batch, params.w, params.h, num, classes, coords, max_boxes);
     assert(l.outputs == params.inputs);
@@ -685,7 +685,7 @@ void parse_net_options(list *options, network *net)
     net->policy = get_policy(policy_s);
     net->burn_in = option_find_int_quiet(options, "burn_in", 0);
 #ifdef CUDNN_HALF
-	net->burn_in = 0;
+    net->burn_in = 0;
 #endif
     net->power = option_find_float_quiet(options, "power", 4);
     if(net->policy == STEP){
