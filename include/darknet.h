@@ -421,8 +421,10 @@ struct layer{
     float * weight_updates_gpu;
     float * weight_change_gpu;
 
+#ifdef CUDNN_HALF
     float * weights_gpu16;
     float * weight_updates_gpu16;
+#endif
 
     float * biases_gpu;
     float * bias_updates_gpu;
@@ -443,7 +445,9 @@ struct layer{
     cudnnTensorDescriptor_t dsrcTensorDesc, ddstTensorDesc;
     cudnnTensorDescriptor_t normTensorDesc;
     cudnnTensorDescriptor_t normDstTensorDesc;
+#ifdef CUDNN_HALF
     cudnnTensorDescriptor_t normDstTensorDescF16;
+#endif
     cudnnFilterDescriptor_t weightDesc;
     cudnnFilterDescriptor_t dweightDesc;
     cudnnConvolutionDescriptor_t convDesc;
@@ -522,10 +526,12 @@ typedef struct network{
 #ifdef GPU
     float *input_gpu;
     float *truth_gpu;
+#ifdef CUDNN_HALF
     float **input16_gpu;
     float **output16_gpu;
     size_t *max_input16_size;
     size_t *max_output16_size;
+#endif
     float *delta_gpu;
     float *output_gpu;
 #endif

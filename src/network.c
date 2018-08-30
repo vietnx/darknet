@@ -183,7 +183,7 @@ network *make_network(int n)
     net->seen = calloc(1, sizeof(size_t));
     net->t    = calloc(1, sizeof(int));
     net->cost = calloc(1, sizeof(float));
-#ifdef GPU
+#ifdef CUDNN_HALF
     net->input16_gpu = calloc(1, sizeof(float *));
     net->output16_gpu = calloc(1, sizeof(float *));
     net->max_input16_size = calloc(1, sizeof(size_t));
@@ -297,7 +297,7 @@ float train_network_datum(network *net)
 {
     *net->seen += net->batch;
     net->train = 1;
-#if defined(GPU) && defined(CUDNN) && defined(CUDNN_HALF)
+#ifdef CUDNN_HALF
     for (int i = 0; i < net->n; ++i) {
         layer l = net->layers[i];
         cuda_convert_f32_to_f16(l.weights_gpu, l.nweights, l.weights_gpu16);
@@ -743,12 +743,14 @@ void free_network(network *net)
 #ifdef GPU
     if(net->input_gpu) cuda_free(net->input_gpu);
     if(net->truth_gpu) cuda_free(net->truth_gpu);
+#ifdef CUDNN_HALF
     if (*net->input16_gpu) cuda_free(*net->input16_gpu);
     if (*net->output16_gpu) cuda_free(*net->output16_gpu);
     if (net->input16_gpu) free(net->input16_gpu);
     if (net->output16_gpu) free(net->output16_gpu);
     if (net->max_input16_size) free(net->max_input16_size);
     if (net->max_output16_size) free(net->max_output16_size);
+#endif
 #endif
     free(net);
 }
