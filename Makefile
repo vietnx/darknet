@@ -87,7 +87,8 @@ LDFLAGS += -lm -pthread
 OPTS = -Ofast
 OBJ_EXT = .o
 LDFLAGS_EXEC = -L$(LIB_BUILD_DIR) -l$(LIBRARY_NAME)
-LDFLAGS_EXEC += -Wl,-rpath,$(LIB_BUILD_DIR)
+LDFLAGS_EXEC += -Wl,-rpath,\$$ORIGIN/$(LIB_BUILD_DIR)
+LDFLAGS_EXEC += -Wl,-rpath,\$$ORIGIN
 endif
 AR=ar
 ARFLAGS=rcs
