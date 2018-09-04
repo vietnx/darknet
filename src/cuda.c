@@ -9,6 +9,17 @@ DARKNET_API int gpu_index = 0;
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
+#include <execinfo.h>
+
+static inline void print_stack_trace(){
+    void* callstack[128];
+    int i, frames = backtrace(callstack, 128);
+    char** strs = backtrace_symbols(callstack, frames);
+    for (i = 0; i < frames; ++i) {
+        printf("%s\n", strs[i]);
+    }
+    free(strs);
+}
 
 void cuda_set_device(int n)
 {
@@ -27,25 +38,24 @@ int cuda_get_device()
 
 void check_error(cudaError_t status)
 {
-    //cudaDeviceSynchronize();
-    cudaError_t status2 = cudaGetLastError();
-    if (status != cudaSuccess)
-    {   
+    if (status != cudaSuccess){   
         const char *s = cudaGetErrorString(status);
-        char buffer[256];
         printf("CUDA Error: %s\n", s);
-        assert(0);
+        char buffer[256];
         snprintf(buffer, 256, "CUDA Error: %s", s);
         error(buffer);
-    } 
-    if (status2 != cudaSuccess)
-    {   
-        const char *s = cudaGetErrorString(status);
-        char buffer[256];
-        printf("CUDA Error Prev: %s\n", s);
+        print_stack_trace();
         assert(0);
+    } 
+    cudaError_t status2 = cudaGetLastError();
+    if (status2 != cudaSuccess){   
+        const char *s = cudaGetErrorString(status2);
+        printf("CUDA Error Prev: %s\n", s);
+        char buffer[256];
         snprintf(buffer, 256, "CUDA Error Prev: %s", s);
         error(buffer);
+        print_stack_trace();
+        assert(0);
     } 
 }
 
