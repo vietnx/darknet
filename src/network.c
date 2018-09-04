@@ -1078,19 +1078,19 @@ void fuse_conv_batchnorm(network* net)
 		if (l->type == CONVOLUTIONAL) {
 			printf(" Fuse Convolutional layer \t\t l->size = %d  \n", l->size);
 
-			if (l->batch_normalize) {
-				for (int f = 0; f < l->n; ++f)
-				{
-					l->biases[f] = l->biases[f] - l->scales[f] * l->rolling_mean[f] / (sqrtf(l->rolling_variance[f]) + .000001f);
+            if (l->batch_normalize) {
+                for (int f = 0; f < l->n; ++f)
+                {
+                    l->biases[f] = l->biases[f] - (double)l->scales[f] * l->rolling_mean[f] / (sqrtf((double)l->rolling_variance[f]) + .000001f);
 
 					const size_t filter_size = l->size*l->size*l->c;
 					int i;
 					for (i = 0; i < filter_size; ++i) {
 						int w_index = f*filter_size + i;
 
-						l->weights[w_index] = l->weights[w_index] * l->scales[f] / (sqrtf(l->rolling_variance[f]) + .000001f);
-					}
-				}
+                        l->weights[w_index] = (double)l->weights[w_index] * l->scales[f] / (sqrtf((double)l->rolling_variance[f]) + .000001f);
+                    }
+                }
 
 				l->batch_normalize = 0;
 #ifdef GPU
