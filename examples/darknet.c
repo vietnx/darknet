@@ -5,6 +5,65 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifdef __unix__
+#include <sys/socket.h>
+#include <unistd.h>
+#include <signal.h>
+#include <execinfo.h>
+#include <ucontext.h>
+
+/* This structure mirrors the one found in /usr/include/asm/ucontext.h */
+typedef struct _sig_ucontext {
+ unsigned long     uc_flags;
+ struct ucontext   *uc_link;
+ stack_t           uc_stack;
+ struct sigcontext uc_mcontext;
+ sigset_t          uc_sigmask;
+} sig_ucontext_t;
+
+static void signalHandler(int sig, siginfo_t * info, void * ucontext){
+    if(sig == SIGSEGV){
+        void *             array[50];
+         void *             caller_address;
+         char **            messages;
+         int                size, i;
+         sig_ucontext_t *   uc;
+
+         uc = (sig_ucontext_t *)ucontext;
+
+         /* Get the address at the time the signal was raised */
+        #if defined(__i386__) // gcc specific
+         caller_address = (void *) uc->uc_mcontext.eip; // EIP: x86 specific
+        #elif defined(__x86_64__) // gcc specific
+         caller_address = (void *) uc->uc_mcontext.rip; // RIP: x86_64 specific
+        #elif defined(__ARM_ARCH) // gcc specific
+         caller_address = (void *) uc->uc_mcontext.pc; // PC: ARM specific
+        #else
+        #error Unsupported architecture. // TODO: Add support for other arch.
+        #endif
+
+         printf("signal %d (%s), address is %p from %p\n", sig, strsignal(sig), info->si_addr, (void *)caller_address);
+
+         size = backtrace(array, 50);
+
+         /* overwrite sigaction with caller's address */
+         array[1] = caller_address;
+
+         messages = backtrace_symbols(array, size);
+
+         /* skip first stack frame (points here) */
+         for (i = 1; i < size && messages != NULL; ++i)
+         {
+            printf("[bt]: (%d) %s\n", i, messages[i]);
+         }
+
+         free(messages);
+
+         exit(EXIT_FAILURE);
+    }
+}
+#endif
+
 extern void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *filename, int top);
 extern void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
 extern void run_yolo(int argc, char **argv);
@@ -413,6 +472,17 @@ int main(int argc, char **argv)
         fprintf(stderr, "usage: %s <function>\n", argv[0]);
         return 0;
     }
+
+#ifdef __unix__
+    // setup signal handler
+    struct sigaction sa;
+    sa.sa_sigaction = &signalHandler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags |= SA_RESTART| SA_SIGINFO;
+
+    sigaction(SIGSEGV, &sa, NULL);
+#endif
+
     gpu_index = find_int_arg(argc, argv, "-i", 0);
     if(find_arg(argc, argv, "-nogpu")) {
         gpu_index = -1;
