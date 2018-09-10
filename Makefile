@@ -89,6 +89,8 @@ OBJ_EXT = .o
 LDFLAGS_EXEC = -L$(LIB_BUILD_DIR) -l$(LIBRARY_NAME)
 LDFLAGS_EXEC += -Wl,-rpath,\$$ORIGIN/$(LIB_BUILD_DIR)
 LDFLAGS_EXEC += -Wl,-rpath,\$$ORIGIN
+# this flag need for stack trace
+LDFLAGS += -rdynamic
 endif
 AR=ar
 ARFLAGS=rcs
@@ -103,7 +105,7 @@ CFLAGS+= -fopenmp
 endif
 
 ifeq ($(DEBUG), 1)
-OPTS = -O0 -g
+OPTS = -Og -g
 endif
 
 CFLAGS+=$(OPTS)
