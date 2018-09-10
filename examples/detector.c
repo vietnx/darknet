@@ -493,15 +493,17 @@ void validate_detector(char *datacfg, char *cfgfile, char *weightfile, char *out
     fprintf(stderr, "Total Detection Time: %f Seconds\n", what_time_is_it_now() - start);
 }
 
-void validate_detector_recall(char *cfgfile, char *weightfile)
+void validate_detector_recall(char *datacfg, char *cfgfile, char *weightfile)
 {
+    list *options = read_data_cfg(datacfg);
+    char *valid_images = option_find_str(options, "valid", "data/valid.list");
     network *net = load_network(cfgfile, weightfile, 0);
     set_batch_network(net, 1);
     fuse_conv_batchnorm(net);
     fprintf(stderr, "Learning Rate: %g, Momentum: %g, Decay: %g\n", net->learning_rate, net->momentum, net->decay);
     srand(time(0));
 
-    list *plist = get_paths("data/coco_val_5k.list");
+    list *plist = get_paths(valid_images);
     char **paths = (char **)list_to_array(plist);
 
     layer l = net->layers[net->n-1];
@@ -522,7 +524,9 @@ void validate_detector_recall(char *cfgfile, char *weightfile)
     int total = 0;
     int correct = 0;
     int proposals = 0;
-    float avg_iou = 0;
+    float avg_iou = 0.f;
+    float total_iou = 0.f;
+    float total_recall = 0.f;
 
     for(i = 0; i < m; ++i){
         char *path = paths[i];
@@ -565,10 +569,15 @@ void validate_detector_recall(char *cfgfile, char *weightfile)
         }
 
         fprintf(stderr, "%5d %5d %5d\tRPs/Img: %.2f\tIOU: %.2f%%\tRecall:%.2f%%\n", i, correct, total, (float)proposals/(i+1), avg_iou*100/total, 100.*correct/total);
+        total_iou += avg_iou*100/total;
+        total_recall += 100.*correct/total;
         free(id);
         free_image(orig);
         free_image(sized);
+        free_detections(dets, nboxes);
     }
+    printf("Average IOU: %.2f%%\taverage Recall: %.2f%%\n", total_iou/(float)m, total_recall/(float)m);
+    free_network(net);
 }
 
 void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen)
@@ -706,7 +715,7 @@ void run_detector(int argc, char **argv)
     else if(0==strcmp(argv[2], "train")) train_detector(datacfg, cfg, weights, gpus, ngpus, clear);
     else if(0==strcmp(argv[2], "valid")) validate_detector(datacfg, cfg, weights, outfile);
     else if(0==strcmp(argv[2], "valid2")) validate_detector_flip(datacfg, cfg, weights, outfile);
-    else if(0==strcmp(argv[2], "recall")) validate_detector_recall(cfg, weights);
+    else if(0==strcmp(argv[2], "recall")) validate_detector_recall(datacfg, cfg, weights);
     else if(0==strcmp(argv[2], "demo")) {
         list *options = read_data_cfg(datacfg);
         int classes = option_find_int(options, "classes", 20);
