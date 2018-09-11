@@ -698,6 +698,7 @@ DARKNET_API void CALLBACK save_image_png(image im, const char *name);
 DARKNET_API void CALLBACK get_next_batch(data d, int n, int offset, float *X, float *y);
 DARKNET_API void CALLBACK grayscale_image_3c(image im);
 DARKNET_API void CALLBACK normalize_image(image p);
+DARKNET_API void CALLBACK normalize_image2(image p);
 DARKNET_API void CALLBACK matrix_to_csv(matrix m);
 DARKNET_API float CALLBACK train_network_sgd(network *net, data d, int n);
 DARKNET_API void CALLBACK rgbgr_image(image im);

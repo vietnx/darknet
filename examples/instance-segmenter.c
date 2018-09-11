@@ -1,5 +1,4 @@
 #include "darknet.h"
-#include <sys/time.h>
 #include <assert.h>
 #include "visualization.h"
 
@@ -202,8 +201,8 @@ void demo_isegmenter(char *datacfg, char *cfg, char *weights, int cam_index, con
     float fps = 0;
 
     while(1){
-        struct timeval tval_before, tval_after, tval_result;
-        gettimeofday(&tval_before, NULL);
+        double time_before, time_after;
+        time_before = what_time_is_it_now();
 
         image in = get_image_from_stream(cap);
         image in_s = letterbox_image(in, net->w, net->h);
@@ -222,10 +221,8 @@ void demo_isegmenter(char *datacfg, char *cfg, char *weights, int cam_index, con
         free_image(in);
         free_image(prmask);
 
-        gettimeofday(&tval_after, NULL);
-        timersub(&tval_after, &tval_before, &tval_result);
-        float curr = 1000000.f/((long int)tval_result.tv_usec);
-        fps = .9*fps + .1*curr;
+        time_after = what_time_is_it_now();
+        fps = 1./(time_after - time_before);
     }
 #endif
 }

@@ -9,6 +9,8 @@ DARKNET_API int gpu_index = 0;
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
+
+#ifdef __unix__
 #include <execinfo.h>
 
 static inline void print_stack_trace(){
@@ -20,6 +22,7 @@ static inline void print_stack_trace(){
     }
     free(strs);
 }
+#endif
 
 void cuda_set_device(int n)
 {
@@ -44,7 +47,9 @@ void check_error(cudaError_t status)
         char buffer[256];
         snprintf(buffer, 256, "CUDA Error: %s", s);
         error(buffer);
+#ifdef __unix__
         print_stack_trace();
+#endif
         assert(0);
     } 
     cudaError_t status2 = cudaGetLastError();
@@ -54,7 +59,9 @@ void check_error(cudaError_t status)
         char buffer[256];
         snprintf(buffer, 256, "CUDA Error Prev: %s", s);
         error(buffer);
+#ifdef __unix__
         print_stack_trace();
+#endif
         assert(0);
     } 
 }
