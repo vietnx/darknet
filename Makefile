@@ -117,7 +117,7 @@ ifeq ($(OS),Windows_NT)
 COMMON += -I/c/opencv/build/include
 LDFLAGS += -LIBPATH:/c/opencv/build/x64/vc14/lib opencv_world331.lib
 else
-LDFLAGS+= `pkg-config --libs opencv`
+LDFLAGS+= `pkg-config --libs opencv` -lstdc++
 COMMON+= `pkg-config --cflags opencv`
 endif
 endif
@@ -154,7 +154,7 @@ CFLAGS+= -DCUDNN_HALF
 ARCH+= -gencode arch=compute_70,code=[sm_70,compute_70]
 endif
 
-OBJ=gemm$(OBJ_EXT) utils$(OBJ_EXT) cuda$(OBJ_EXT) deconvolutional_layer$(OBJ_EXT) convolutional_layer$(OBJ_EXT) list$(OBJ_EXT) image$(OBJ_EXT) activations$(OBJ_EXT) im2col$(OBJ_EXT) col2im$(OBJ_EXT) blas$(OBJ_EXT) crop_layer$(OBJ_EXT) dropout_layer$(OBJ_EXT) maxpool_layer$(OBJ_EXT) softmax_layer$(OBJ_EXT) data$(OBJ_EXT) matrix$(OBJ_EXT) network$(OBJ_EXT) connected_layer$(OBJ_EXT) cost_layer$(OBJ_EXT) parser$(OBJ_EXT) option_list$(OBJ_EXT) detection_layer$(OBJ_EXT) route_layer$(OBJ_EXT) box$(OBJ_EXT) normalization_layer$(OBJ_EXT) avgpool_layer$(OBJ_EXT) layer$(OBJ_EXT) local_layer$(OBJ_EXT) shortcut_layer$(OBJ_EXT) activation_layer$(OBJ_EXT) rnn_layer$(OBJ_EXT) gru_layer$(OBJ_EXT) crnn_layer$(OBJ_EXT) batchnorm_layer$(OBJ_EXT) region_layer$(OBJ_EXT) reorg_layer$(OBJ_EXT) tree$(OBJ_EXT)  lstm_layer$(OBJ_EXT) l2norm_layer$(OBJ_EXT) logistic_layer$(OBJ_EXT) upsample_layer$(OBJ_EXT) yolo_layer$(OBJ_EXT) iseg_layer$(OBJ_EXT)
+OBJ=gemm$(OBJ_EXT) utils$(OBJ_EXT) cuda$(OBJ_EXT) deconvolutional_layer$(OBJ_EXT) convolutional_layer$(OBJ_EXT) list$(OBJ_EXT) image$(OBJ_EXT) activations$(OBJ_EXT) im2col$(OBJ_EXT) col2im$(OBJ_EXT) blas$(OBJ_EXT) crop_layer$(OBJ_EXT) dropout_layer$(OBJ_EXT) maxpool_layer$(OBJ_EXT) softmax_layer$(OBJ_EXT) data$(OBJ_EXT) matrix$(OBJ_EXT) network$(OBJ_EXT) connected_layer$(OBJ_EXT) cost_layer$(OBJ_EXT) parser$(OBJ_EXT) option_list$(OBJ_EXT) detection_layer$(OBJ_EXT) route_layer$(OBJ_EXT) box$(OBJ_EXT) normalization_layer$(OBJ_EXT) avgpool_layer$(OBJ_EXT) layer$(OBJ_EXT) local_layer$(OBJ_EXT) shortcut_layer$(OBJ_EXT) activation_layer$(OBJ_EXT) rnn_layer$(OBJ_EXT) gru_layer$(OBJ_EXT) crnn_layer$(OBJ_EXT) batchnorm_layer$(OBJ_EXT) region_layer$(OBJ_EXT) reorg_layer$(OBJ_EXT) tree$(OBJ_EXT)  lstm_layer$(OBJ_EXT) l2norm_layer$(OBJ_EXT) logistic_layer$(OBJ_EXT) upsample_layer$(OBJ_EXT) yolo_layer$(OBJ_EXT) iseg_layer$(OBJ_EXT) image_opencv$(OBJ_EXT)
 EXECOBJA=captcha$(OBJ_EXT) lsd$(OBJ_EXT) super$(OBJ_EXT) art$(OBJ_EXT) tag$(OBJ_EXT) cifar$(OBJ_EXT) go$(OBJ_EXT) rnn$(OBJ_EXT) segmenter$(OBJ_EXT) regressor$(OBJ_EXT) classifier$(OBJ_EXT) coco$(OBJ_EXT) yolo$(OBJ_EXT) detector$(OBJ_EXT) nightmare$(OBJ_EXT) attention$(OBJ_EXT) darknet$(OBJ_EXT) demo$(OBJ_EXT) visualization$(OBJ_EXT) instance-segmenter$(OBJ_EXT)
 ifeq ($(GPU), 1)
 OBJ+=convolutional_kernels$(OBJ_EXT) deconvolutional_kernels$(OBJ_EXT) activation_kernels$(OBJ_EXT) im2col_kernels$(OBJ_EXT) col2im_kernels$(OBJ_EXT) blas_kernels$(OBJ_EXT) crop_layer_kernels$(OBJ_EXT) dropout_layer_kernels$(OBJ_EXT) maxpool_layer_kernels$(OBJ_EXT) avgpool_layer_kernels$(OBJ_EXT)
@@ -199,6 +199,13 @@ ifeq ($(OS),Windows_NT)
 	$(CC) $(COMMON) $(CFLAGS) -c $< -Fo$@
 else
 	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@
+endif
+
+$(OBJDIR)%$(OBJ_EXT): %.cpp $(DEPS)
+ifeq ($(OS),Windows_NT)
+	$(CXX) $(COMMON) $(CFLAGS) -c $< -Fo$@
+else
+	$(CXX) $(COMMON) $(CFLAGS) -c $< -o $@
 endif
 
 $(OBJDIR)%$(OBJ_EXT): %.cu $(DEPS)

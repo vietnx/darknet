@@ -9,11 +9,17 @@
 #include "box.h"
 #include "darknet.h"
 
-#ifndef __cplusplus
-#ifdef OPENCV
-DARKNET_API image CALLBACK ipl_to_image(IplImage* src);
-DARKNET_API void CALLBACK ipl_into_image(IplImage* src, image im);
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+#ifdef OPENCV
+//DARKNET_API image CALLBACK ipl_to_image(IplImage* src);
+//DARKNET_API void CALLBACK ipl_into_image(IplImage* src, image im);
+void *open_video_stream(const char *f, int c, int w, int h, int fps);
+image get_image_from_stream(void *p);
+image load_image_cv(char *filename, int channels);
+int show_image_cv(image im, const char* name, int ms);
 #endif
 
 DARKNET_API float CALLBACK get_pixel(image m, int x, int y, int c);
@@ -52,6 +58,10 @@ DARKNET_API image CALLBACK make_empty_image(int w, int h, int c);
 void copy_image_into(image src, image dest);
 
 DARKNET_API image CALLBACK get_image_layer(image m, int l);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

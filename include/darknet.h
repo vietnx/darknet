@@ -45,18 +45,6 @@ DARKNET_API extern int gpu_index;
     #endif
 #endif
 
-#ifndef __cplusplus
-    #ifdef OPENCV
-    #include "opencv2/highgui/highgui_c.h"
-    #include "opencv2/imgproc/imgproc_c.h"
-    #include "opencv2/core/version.hpp"
-    #if CV_MAJOR_VERSION == 3
-    #include "opencv2/videoio/videoio_c.h"
-    #include "opencv2/imgcodecs/imgcodecs_c.h"
-    #endif
-    #endif
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -85,6 +73,10 @@ DARKNET_API tree * CALLBACK read_tree(char *filename);
 typedef enum{
     LOGISTIC, RELU, RELIE, LINEAR, RAMP, TANH, PLSE, LEAKY, ELU, LOGGY, STAIR, HARDTAN, LHTAN, SELU
 } ACTIVATION;
+
+typedef enum{
+    PNG, BMP, TGA, JPG
+} IMTYPE;
 
 typedef enum{
     MULT, ADD, SUB, DIV
@@ -694,7 +686,8 @@ DARKNET_API void CALLBACK sync_nets(network **nets, int n, int interval);
 DARKNET_API void CALLBACK harmless_update_network_gpu(network *net);
 #endif
 image get_label(image **characters, char *string, int size);
-DARKNET_API void CALLBACK save_image_png(image im, const char *name);
+DARKNET_API void CALLBACK save_image(image im, const char *name);
+DARKNET_API void CALLBACK save_image_options(image im, const char *name, IMTYPE f, int quality);
 DARKNET_API void CALLBACK get_next_batch(data d, int n, int offset, float *X, float *y);
 DARKNET_API void CALLBACK grayscale_image_3c(image im);
 DARKNET_API void CALLBACK normalize_image(image p);
@@ -753,7 +746,6 @@ DARKNET_API image CALLBACK threshold_image(image im, float thresh);
 DARKNET_API image CALLBACK mask_to_rgb(image mask);
 DARKNET_API int CALLBACK resize_network(network *net, int w, int h);
 DARKNET_API void CALLBACK free_matrix(matrix m);
-DARKNET_API void CALLBACK save_image(image p, const char *name);
 DARKNET_API image CALLBACK copy_image(image p);
 DARKNET_API float CALLBACK get_current_rate(network *net);
 DARKNET_API void CALLBACK composite_3d(char *f1, char *f2, char *out, int delta);

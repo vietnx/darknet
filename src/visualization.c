@@ -54,48 +54,11 @@ void test_resize(char *filename)
         show_image(c, "rand", 1);
         printf("%f %f %f\n", dhue, dsat, dexp);
         free_image(c);
-        cvWaitKey(0);
     }
 #endif
 }
 
 #ifdef OPENCV
-void show_image_cv(image p, const char *name, IplImage *disp)
-{
-    int x,y,k;
-    if(p.c == 3) rgbgr_image(p);
-    //normalize_image(copy);
-
-    char buff[256];
-    //sprintf(buff, "%s (%d)", name, windows);
-    sprintf(buff, "%s", name);
-
-    int step = disp->widthStep;
-    cvNamedWindow(buff, CV_WINDOW_NORMAL);
-    //cvMoveWindow(buff, 100*(windows%10) + 200*(windows/10), 100*(windows%10));
-    ++windows;
-    for(y = 0; y < p.h; ++y){
-        for(x = 0; x < p.w; ++x){
-            for(k= 0; k < p.c; ++k){
-                disp->imageData[y*step + x*p.c + k] = (unsigned char)(get_pixel(p,x,y,k)*255);
-            }
-        }
-    }
-    if(0){
-        int w = 448;
-        int h = w*p.h/p.w;
-        if(h > 1000){
-            h = 1000;
-            w = h*p.w/p.h;
-        }
-        IplImage *buffer = disp;
-        disp = cvCreateImage(cvSize(w, h), buffer->depth, buffer->nChannels);
-        cvResize(buffer, disp, CV_INTER_LINEAR);
-        cvReleaseImage(&buffer);
-    }
-    cvShowImage(buff, disp);
-}
-
 void flush_stream_buffer(CvCapture *cap, int n)
 {
     int i;
@@ -103,46 +66,17 @@ void flush_stream_buffer(CvCapture *cap, int n)
         cvQueryFrame(cap);
     }
 }
-
-image get_image_from_stream(CvCapture *cap)
-{
-    IplImage* src = cvQueryFrame(cap);
-    if (!src) return make_empty_image(0,0,0);
-    image im = ipl_to_image(src);
-    if(im.c == 3){
-        rgbgr_image(im);
-    }
-    return im;
-}
-
-int fill_image_from_stream(CvCapture *cap, image im)
-{
-    IplImage* src = cvQueryFrame(cap);
-    if (!src) return 0;
-    ipl_into_image(src, im);
-    if(im.c == 3){
-        rgbgr_image(im);
-    }
-    return 1;
-}
 #endif
 
 int show_image(image p, const char *name, int ms)
 {
 #ifdef OPENCV
-    IplImage *disp = cvCreateImage(cvSize(p.w,p.h), IPL_DEPTH_8U, p.c);
-    image copy = copy_image(p);
-    constrain_image(copy);
-    show_image_cv(copy, name, disp);
-    free_image(copy);
-    cvReleaseImage(&disp);
-    int c = cvWaitKey(ms);
-    if (c != -1) c = c%256;
+    int c = show_image_cv(p, name, ms);
     return c;
 #else
     fprintf(stderr, "Not compiled with OpenCV, saving to %s.png instead\n", name);
     save_image(p, name);
-    return 0;
+    return -1;
 #endif
 }
 
