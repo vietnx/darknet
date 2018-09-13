@@ -574,7 +574,6 @@ void validate_detector_recall(char *datacfg, char *cfgfile, char *weightfile)
         free(id);
         free_image(orig);
         free_image(sized);
-        free_detections(dets, nboxes);
     }
     printf("Average IOU: %.2f%%\taverage Recall: %.2f%%\n", total_iou/(float)m, total_recall/(float)m);
     free_network(net);
