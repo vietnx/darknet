@@ -49,7 +49,9 @@ Mat image_to_mat(image im)
 {
     image copy = copy_image(im);
     constrain_image(copy);
-    if(im.c == 3) rgbgr_image(copy);
+    if(im.c == 3){
+        rgbgr_image(copy);
+    }
 
     IplImage *ipl = image_to_ipl(copy);
     Mat m = cvarrToMat(ipl, true);
@@ -62,7 +64,9 @@ image mat_to_image(Mat m)
 {
     IplImage ipl = m;
     image im = ipl_to_image(&ipl);
-    rgbgr_image(im);
+    if(im.c == 3){
+        rgbgr_image(im);
+    }
     return im;
 }
 
