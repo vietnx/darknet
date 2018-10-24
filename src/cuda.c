@@ -41,29 +41,27 @@ int cuda_get_device()
 
 void check_error(cudaError_t status)
 {
-    if (status != cudaSuccess){   
+    if (status != cudaSuccess){
         const char *s = cudaGetErrorString(status);
         printf("CUDA Error: %s\n", s);
+#ifdef __unix__
+        print_stack_trace();
+#endif
         char buffer[256];
         snprintf(buffer, 256, "CUDA Error: %s", s);
         error(buffer);
+    }
+    cudaError_t status2 = cudaGetLastError();
+    if (status2 != cudaSuccess){
+        const char *s = cudaGetErrorString(status2);
+        printf("CUDA Error Prev: %s\n", s);
 #ifdef __unix__
         print_stack_trace();
 #endif
-        assert(0);
-    } 
-    cudaError_t status2 = cudaGetLastError();
-    if (status2 != cudaSuccess){   
-        const char *s = cudaGetErrorString(status2);
-        printf("CUDA Error Prev: %s\n", s);
         char buffer[256];
         snprintf(buffer, 256, "CUDA Error Prev: %s", s);
         error(buffer);
-#ifdef __unix__
-        print_stack_trace();
-#endif
-        assert(0);
-    } 
+    }
 }
 
 dim3 cuda_gridsize(size_t n){

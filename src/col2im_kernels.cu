@@ -54,5 +54,6 @@ void col2im_gpu(float *data_col,
                 num_kernels, data_col, height, width, ksize, pad,
                 stride, height_col,
                 width_col, data_im);
+    check_error(cudaPeekAtLastError());
 }
 
