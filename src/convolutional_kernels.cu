@@ -150,9 +150,8 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
     }
     float *output16 = *net.output16_gpu;
 
-    cuda_convert_f32_to_f16(net.input, input16_size, input16);
+    cuda_convert_f32_to_f16(net.input_gpu, input16_size, input16);
 
-    //fill_ongpu(output16_size / 2, 0, (float *)output16, 1);
     cudnnConvolutionForward(cudnn_handle(),
         &alpha,
         l.srcTensorDesc,
@@ -166,13 +165,10 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
         &beta,
         l.dstTensorDesc,
         output16);
-    
 
     if (l.batch_normalize){
         if (net.train){ // Training
             copy_gpu(l.outputs*l.batch / 2, output16, 1, l.x_gpu, 1);
-            //cudaMemcpyAsync(l.x_gpu, output16, l.outputs*l.batch*sizeof(half), cudaMemcpyDefault, get_cuda_stream());
-            float one = 1;
             float zero = 0;
             // Batch-normalization can still take FP16 inputs and outputs, saving half the bandwidth
             // compared to FP32, it is just that the statistics and value adjustment should be done in FP32.
@@ -207,7 +203,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network net)
     else{ // BIAS only
         cuda_convert_f16_to_f32(output16, output16_size, l.output_gpu);
         add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.n, l.out_w*l.out_h);
-    }    
+    }
 
 #else
 
@@ -345,14 +341,10 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network net)
     }
     float *delta16 = *net.output16_gpu;
 
-    cuda_convert_f32_to_f16(net.input, input16_size, input16);
+    cuda_convert_f32_to_f16(net.input_gpu, input16_size, input16);
     cuda_convert_f32_to_f16(l.delta_gpu, delta16_size, delta16);
 
     if (l.batch_normalize) {
-        //if (!net.train) {
-        //    l.mean_gpu = l.rolling_mean_gpu;
-        //    l.variance_gpu = l.rolling_variance_gpu;
-        //}
         float one = 1;
         float zero = 0;
         cudnnBatchNormalizationBackward(cudnn_handle(),
@@ -375,7 +367,6 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network net)
             l.mean_gpu,                // input (should be FP32)
             l.variance_gpu);        // input (should be FP32)
         copy_gpu(l.outputs*l.batch / 2, l.x_norm_gpu, 1, delta16, 1);
-        //cudaMemcpyAsync(delta16, l.x_norm_gpu, l.outputs*l.batch * sizeof(half), cudaMemcpyDefault, get_cuda_stream());
     }
     else{
         backward_bias_gpu(l.bias_updates_gpu, l.delta_gpu, l.batch, l.n, l.out_w*l.out_h);
@@ -405,7 +396,7 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network net)
 
     cuda_convert_f16_to_f32(l.weight_updates_gpu16, l.c*l.n*l.size*l.size, l.weight_updates_gpu);
 
-    if (net.delta) {
+    if (net.delta_gpu) {
         if (l.binary || l.xnor) swap_binary(&l);
 
         // http://docs.nvidia.com/deeplearning/sdk/cudnn-developer-guide/index.html#cudnnConvolutionBackwardData
@@ -424,12 +415,12 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network net)
             l.workspace_size,
             &beta,
             l.dsrcTensorDesc,
-            input16);    // net.delta);
+            input16);    // net.delta_gpu);
 
-        cuda_convert_f16_to_f32(input16, input16_size, net.delta);
+        cuda_convert_f16_to_f32(input16, input16_size, net.delta_gpu);
 
         if (l.binary || l.xnor) swap_binary(&l);
-        if (l.xnor) gradient_array_gpu(original_input, l.batch*l.c*l.h*l.w, HARDTAN, net.delta);
+        if (l.xnor) gradient_array_gpu(original_input, l.batch*l.c*l.h*l.w, HARDTAN, net.delta_gpu);
     }
 #else    // CUDNN_HALF
 
