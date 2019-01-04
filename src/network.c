@@ -386,12 +386,14 @@ void set_batch_network(network *net, int b)
 
 int resize_network(network *net, int w, int h)
 {
+    if(w == net->w && h == net->h){
+        return 0;
+    }
 #ifdef GPU
     cuda_set_device(net->gpu_index);
     cuda_free(net->workspace);
 #endif
     int i;
-    //if(w == net->w && h == net->h) return 0;
     net->w = w;
     net->h = h;
     int inputs = 0;
