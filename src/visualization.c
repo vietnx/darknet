@@ -58,16 +58,6 @@ void test_resize(char *filename)
 #endif
 }
 
-#ifdef OPENCV
-void flush_stream_buffer(CvCapture *cap, int n)
-{
-    int i;
-    for(i = 0; i < n; ++i) {
-        cvQueryFrame(cap);
-    }
-}
-#endif
-
 int show_image(image p, const char *name, int ms)
 {
 #ifdef OPENCV

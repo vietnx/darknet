@@ -5,10 +5,10 @@ CUDNN_HALF=0
 OPENMP=0
 DEBUG=0
 
-ARCH= -gencode arch=compute_50,code=sm_50 \
-	-gencode arch=compute_52,code=sm_52 \
-	-gencode arch=compute_60,code=sm_60 \
-	-gencode arch=compute_61,code=sm_61
+ARCH= -gencode arch=compute_60,code=sm_60 \
+	-gencode arch=compute_61,code=sm_61 \
+	-gencode arch=compute_70,code=sm_70 \
+	-gencode arch=compute_75,code=sm_75
 #      -gencode arch=compute_20,code=[sm_20,sm_21] \ This one is deprecated?
 
 # This is what I use, uncomment if you know your arch and want to specify
@@ -117,8 +117,9 @@ ifeq ($(OS),Windows_NT)
 COMMON += -I/c/opencv/build/include
 LDFLAGS += -LIBPATH:/c/opencv/build/x64/vc14/lib opencv_world331.lib
 else
-LDFLAGS+= `pkg-config --libs opencv` -lstdc++
-COMMON+= `pkg-config --cflags opencv`
+LDFLAGS+= `pkg-config --libs opencv4` -lstdc++
+COMMON+= `pkg-config --cflags opencv4`
+CXXFLAGS += -std=c++11 #required for OpenCV 4.x
 endif
 endif
 
@@ -205,7 +206,7 @@ $(OBJDIR)%$(OBJ_EXT): %.cpp $(DEPS)
 ifeq ($(OS),Windows_NT)
 	$(CXX) $(COMMON) $(CFLAGS) -c $< -Fo$@
 else
-	$(CXX) $(COMMON) $(CFLAGS) -c $< -o $@
+	$(CXX) $(COMMON) $(CFLAGS) $(CXXFLAGS) -c $< -o $@
 endif
 
 $(OBJDIR)%$(OBJ_EXT): %.cu $(DEPS)

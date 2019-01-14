@@ -4,8 +4,6 @@
 #include "image.h"
 #include "convolutional_layer.h"
 
-#include <opencv2/videoio/videoio_c.h>
-
 image **load_alphabet();
 void draw_detections(image im, detection *dets, int num, float thresh, char **names, image **alphabet, int classes);
 void draw_box(image a, int x1, int y1, int x2, int y2, float r, float g, float b);
@@ -24,8 +22,6 @@ image *visualize_convolutional_layer(convolutional_layer layer, char *window, im
 void visualize_network(network *net);
 
 #ifdef OPENCV
-int fill_image_from_stream(CvCapture *cap, image im);
-void flush_stream_buffer(CvCapture *cap, int n);
 void* open_video_stream(const char *f, int c, int w, int h, int fps);
 void make_window(char *name, int w, int h, int fullscreen);
 #endif
